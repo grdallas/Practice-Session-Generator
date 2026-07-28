@@ -19,6 +19,48 @@
             --green: #1a5c2a;
         }
 
+        /* Deep Practice mode — a deliberately deeper, more subdued accent than
+           everyday amber, cascading through every button/border/accent that
+           already references --amber, plus a slightly darker page tint. */
+        body.deep-practice-mode {
+            --amber: #6b2818;
+            background: #efe8da;
+        }
+        .ios-switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        .ios-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+            position: absolute;
+        }
+        .ios-switch-track {
+            position: absolute;
+            inset: 0;
+            background: var(--border);
+            border-radius: 24px;
+            transition: background 0.25s;
+        }
+        .ios-switch-thumb {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: var(--paper);
+            border-radius: 50%;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+            transition: transform 0.25s;
+        }
+        .ios-switch input:checked + .ios-switch-track { background: var(--amber); }
+        .ios-switch input:checked + .ios-switch-track .ios-switch-thumb { transform: translateX(20px); }
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
 
@@ -39,7 +81,7 @@
 
         .container { max-width: 800px; width: 100%; }
 
-        .header { text-align: center; margin-bottom: 3rem; }
+        .header { text-align: center; margin-bottom: 2rem; }
 
         .back-link {
             display: inline-block;
@@ -53,6 +95,28 @@
             transition: all 0.2s;
         }
         .back-link:hover { color: var(--amber); border-bottom-color: var(--amber); }
+
+        .nav-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            row-gap: 0.5rem;
+            column-gap: 0.65rem;
+        }
+        .nav-bar a {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.68rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            text-decoration: none;
+            white-space: nowrap;
+            border-bottom: 1px solid transparent;
+            transition: all 0.2s;
+        }
+        .nav-bar a:hover { color: var(--amber); border-bottom-color: var(--amber); }
+        .nav-sep { color: var(--border); font-size: 0.7rem; }
 
         .title {
             font-family: 'Playfair Display', serif;
@@ -69,6 +133,21 @@
             color: var(--ink-muted);
             font-style: italic;
             letter-spacing: 0.04em;
+        }
+
+        .daily-quote {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.8rem;
+            font-style: italic;
+            color: var(--border);
+            letter-spacing: 0.02em;
+            margin-top: 0.9rem;
+        }
+        .daily-quote-attr {
+            font-style: normal;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-size: 0.65rem;
         }
 
         .divider {
@@ -105,7 +184,7 @@
             padding: 0 0.75rem;
         }
         .form-section::after {
-            content: '✦';
+            content: '◆';
             bottom: -0.6rem;
             left: 50%;
             transform: translateX(-50%);
@@ -390,7 +469,7 @@
         .diff-btn:hover:not(:disabled) { border-color: var(--ink); color: var(--ink); }
         .diff-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        /* ── Ask popover ── */
+        /* ── Ask panel ── */
         .ask-btn {
             background: none;
             border: none;
@@ -407,96 +486,152 @@
             gap: 0.25rem;
         }
         .ask-btn:hover { color: var(--amber); }
+        .ask-btn.active { color: var(--amber); }
 
-        .ask-popover {
+        .ask-panel {
             display: none;
+            flex-direction: column;
             position: fixed;
-            z-index: 200;
-            width: 300px;
+            top: 2rem;
+            right: 2rem;
+            width: 380px;
+            max-height: calc(100vh - 4rem);
+            border: 2px solid var(--ink);
             background: var(--ink);
             color: var(--paper);
-            border-radius: 3px;
-            padding: 1rem;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
-            font-size: 0.85rem;
+            overflow: hidden;
+            z-index: 210;
+            box-shadow: -4px 0 32px rgba(0,0,0,0.25);
         }
-        .ask-popover.visible { display: block; }
-        .ask-popover::before {
-            content: '';
-            position: absolute;
-            top: 14px;
-            left: -6px;
-            width: 12px;
-            height: 12px;
-            background: var(--ink);
-            transform: rotate(45deg);
+        .ask-panel.open { display: flex; }
+        .ask-panel-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            flex-shrink: 0;
         }
-        .ask-popover-header {
-            font-size: 0.65rem;
-            letter-spacing: 0.1em;
-            text-transform: uppercase;
+        .ask-panel-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+        .ask-panel-subtitle {
+            display: block;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.72rem;
             color: var(--border);
-            margin-bottom: 0.6rem;
+            margin-top: 2px;
         }
-        .ask-popover-input {
-            width: 100%;
+        .ask-panel-close {
+            background: none;
+            border: none;
+            color: var(--paper);
+            font-size: 1.2rem;
+            cursor: pointer;
+            padding: 0 0.25rem;
+            line-height: 1;
+            opacity: 0.7;
+            transition: opacity 0.15s;
+        }
+        .ask-panel-close:hover { opacity: 1; }
+        .ask-panel-messages {
+            flex: 1;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+        .ask-empty-state {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: var(--border);
+            text-align: center;
+            margin-top: 1.5rem;
+        }
+        .ask-msg {
+            max-width: 90%;
+            font-size: 0.84rem;
+            line-height: 1.55;
+            white-space: pre-wrap;
+        }
+        .ask-msg-user {
+            align-self: flex-end;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15);
+            padding: 0.5rem 0.7rem;
+            color: var(--paper);
+        }
+        .ask-msg-assistant {
+            align-self: flex-start;
+            color: var(--paper);
+        }
+        .ask-typing {
+            align-self: flex-start;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.8rem;
+            color: var(--border);
+        }
+        .ask-panel-input-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+            padding: 0.75rem;
+            border-top: 1px solid rgba(255,255,255,0.15);
+            flex-shrink: 0;
+        }
+        .ask-panel-input {
+            flex: 1;
             background: rgba(255,255,255,0.08);
             border: 1px solid rgba(255,255,255,0.15);
             color: var(--paper);
             font-family: 'Libre Baskerville', serif;
             font-size: 0.82rem;
             padding: 0.5rem 0.65rem;
-            border-radius: 2px;
             outline: none;
             resize: none;
-            min-height: 60px;
+            min-height: 38px;
+            max-height: 120px;
             line-height: 1.5;
         }
-        .ask-popover-input::placeholder { color: rgba(255,255,255,0.35); font-style: italic; }
-        .ask-popover-input:focus { border-color: var(--amber); }
-        .ask-popover-actions {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 0.6rem;
-        }
-        .ask-close-btn {
-            background: none;
-            border: none;
-            color: var(--border);
-            font-size: 0.7rem;
-            cursor: pointer;
-            font-family: inherit;
-            letter-spacing: 0.06em;
-            text-transform: uppercase;
-            padding: 0;
-            transition: color 0.15s;
-        }
-        .ask-close-btn:hover { color: var(--paper); }
-        .ask-submit-btn {
+        .ask-panel-input::placeholder { color: rgba(255,255,255,0.35); font-style: italic; }
+        .ask-panel-input:focus { border-color: var(--amber); }
+        .ask-panel-send {
             background: var(--amber);
             border: none;
             color: var(--ink);
             font-family: 'Playfair Display', serif;
             font-size: 0.8rem;
             font-weight: 700;
-            padding: 0.4rem 0.9rem;
+            padding: 0.5rem 0.9rem;
             cursor: pointer;
-            border-radius: 2px;
             transition: opacity 0.15s;
+            flex-shrink: 0;
         }
-        .ask-submit-btn:hover { opacity: 0.85; }
-        .ask-submit-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-        .ask-response {
-            margin-top: 0.75rem;
-            padding-top: 0.75rem;
-            border-top: 1px solid rgba(255,255,255,0.1);
-            font-size: 0.82rem;
-            line-height: 1.6;
-            color: var(--paper);
-            display: none;
+        .ask-panel-send:hover { opacity: 0.85; }
+        .ask-panel-send:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        @media (max-width: 640px) {
+            .ask-panel.open {
+                top: auto;
+                bottom: 0;
+                right: 0;
+                left: 0;
+                width: 100%;
+                max-height: 70vh;
+                border-left: 2px solid var(--ink);
+                border-top: 2px solid var(--ink);
+                box-shadow: 0 -4px 32px rgba(0,0,0,0.25);
+            }
         }
-        .ask-response.visible { display: block; }
 
         .swap-btn {
             background: none;
@@ -632,6 +767,7 @@
             text-align: center;
         }
         .timer-panel-countdown.warning { color: var(--red); }
+        .timer-panel-countdown.overtime { color: var(--red); animation: idea-pulse 1.4s ease-in-out infinite; }
         .timer-panel-progress {
             width: 100%;
             height: 2px;
@@ -666,6 +802,8 @@
         .timer-panel-btn.primary:hover { opacity: 0.85; }
         .timer-panel-btn.danger { border-color: rgba(139,32,32,0.5); color: rgba(255,150,150,0.8); }
         .timer-panel-btn.danger:hover { background: rgba(139,32,32,0.3); }
+        .timer-panel-btn.starred { background: var(--amber); border-color: var(--amber); color: var(--ink); font-weight: 700; }
+        .timer-panel-btn.starred:hover { opacity: 0.85; }
 
         .tool-step.timer-active {
             background: rgba(200, 132, 26, 0.1) !important;
@@ -828,7 +966,75 @@
             font-style: italic;
             color: var(--ink-muted);
             font-size: 0.78rem;
+            cursor: text;
         }
+        .log-step-time:hover { color: var(--amber); text-decoration: underline dotted; }
+        .log-step-time-input {
+            width: 52px;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.78rem;
+            color: var(--ink);
+            background: var(--paper);
+            border: 1px solid var(--amber);
+            padding: 0 0.25rem;
+            outline: none;
+        }
+        /* Profile read view */
+        .profile-read {
+            display: none;
+        }
+        .profile-read.visible { display: block; }
+        .profile-edit.hidden { display: none; }
+        .profile-field {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--paper-dark);
+            font-size: 0.85rem;
+        }
+        .profile-field:last-child { border-bottom: none; }
+        .profile-field-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            min-width: 120px;
+        }
+        .profile-field-value {
+            color: var(--ink-light);
+            flex: 1;
+            text-align: right;
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1rem;
+            font-style: italic;
+        }
+        .profile-field-value.long {
+            text-align: left;
+            margin-top: 0.25rem;
+            font-size: 0.85rem;
+            font-style: normal;
+            line-height: 1.6;
+        }
+        .profile-field.stacked {
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+        .profile-edit-btn {
+            margin-top: 1rem;
+            padding: 0.5rem 1.25rem;
+            background: none;
+            border: 1px solid var(--border);
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.85rem;
+            font-style: italic;
+            color: var(--ink-muted);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .profile-edit-btn:hover { border-color: var(--ink); color: var(--ink); }
+
         /* Favorites */
         .fav-star {
             background: none;
@@ -1076,71 +1282,452 @@
         }
         .advanced-options.open { display: flex; }
         .advanced-options .form-row { margin-top: 1.25rem; margin-bottom: 0; }
+        body.deep-practice-mode .advanced-toggle {
+            color: var(--amber);
+            font-weight: 700;
+        }
+        body.deep-practice-mode .advanced-toggle:hover { color: var(--ink); }
+        body.deep-practice-mode .advanced-options.open {
+            border-left: 2px solid var(--amber);
+            padding-left: 1rem;
+            margin-left: -1rem;
+        }
 
-        /* ── Tools Sidebar ── */
-        .tools-sidebar {
+        /* ── Tools ── */
+        /* Practice Tools page — card grid, built to scale as more tools are added */
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 1.25rem;
+        }
+        .tool-card {
+            border: 1px solid var(--border);
+            background: var(--paper);
+            padding: 1.4rem 1.2rem 1.2rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+        .tool-card:hover {
+            border-color: var(--amber);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+        .tool-card.active {
+            border-color: var(--amber);
+            outline: 2px double rgba(200,132,26,0.4);
+            outline-offset: 3px;
+        }
+        .tool-card-name {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.1rem;
+            font-style: italic;
+            color: var(--ink);
+            letter-spacing: 0.02em;
+        }
+        .tool-card-desc {
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: var(--ink-muted);
+            flex: 1;
+        }
+        .tool-card-action {
+            font-size: 0.68rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--amber);
+        }
+
+        /* Quick-access tool buttons — fixed to the right side of the Generator page,
+           so a tool can be opened directly even when a session step didn't embed one. */
+        .quick-tools {
             position: fixed;
+            top: 7rem;
             right: 1.5rem;
-            top: 50%;
-            transform: translateY(-50%);
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            z-index: 50;
+            z-index: 90;
         }
-        .tool-trigger-btn {
-            width: auto;
-            height: auto;
-            padding: 0.5rem 0.85rem;
+        .tool-quick-btn {
             background: var(--paper);
             border: 1.5px solid var(--amber);
             color: var(--amber);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            transition: all 0.2s;
-            position: relative;
             font-family: 'Cormorant Garamond', serif;
-            font-size: 0.82rem;
             font-style: italic;
-            letter-spacing: 0.04em;
+            font-size: 0.78rem;
+            padding: 0.5rem 0.9rem;
+            cursor: pointer;
+            text-align: right;
             white-space: nowrap;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+            transition: all 0.2s;
         }
-        .tool-trigger-btn:hover {
-            background: var(--amber);
-            color: var(--ink);
-        }
-        .tool-trigger-btn.active {
+        .tool-quick-btn:hover { background: var(--amber); color: var(--ink); }
+        .tool-quick-btn.active {
             background: var(--amber);
             color: var(--ink);
             outline: 2px double rgba(200,132,26,0.4);
             outline-offset: 3px;
         }
-        .tool-trigger-icon { font-size: 0.85rem; line-height: 1; }
-        .tool-trigger-label { display: none; }
-        .tool-trigger-btn .tool-tooltip {
-            display: none;
-            position: absolute;
-            right: calc(100% + 8px);
-            top: 50%;
-            transform: translateY(-50%);
+        @media (max-width: 900px) {
+            .quick-tools { display: none; } /* Practice Tools page covers mobile access */
+        }
+
+        /* ── Idea Vault ── */
+        .idea-record-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.7rem 1.4rem;
             background: var(--ink);
             color: var(--paper);
-            font-family: 'Cormorant Garamond', serif;
-            font-size: 0.75rem;
-            font-style: italic;
-            padding: 0.3rem 0.6rem;
-            white-space: nowrap;
-            pointer-events: none;
-            border-left: 2px solid var(--amber);
+            border: none;
+            cursor: pointer;
+            font-family: 'Playfair Display', serif;
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: all 0.2s;
         }
-        .tool-trigger-btn:hover .tool-tooltip { display: block; }
+        .idea-record-btn:hover { opacity: 0.85; }
+        .idea-record-btn.recording { background: #8b2020; animation: idea-pulse 1.4s ease-in-out infinite; }
+        @keyframes idea-pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.55; } }
+        .idea-card {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.55rem 0.75rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--paper-dark);
+            background: var(--paper);
+        }
+        .idea-card-play {
+            flex-shrink: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: var(--amber);
+            color: var(--ink);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.72rem;
+            transition: opacity 0.15s;
+        }
+        .idea-card-play:hover { opacity: 0.85; }
+        .idea-card-info { flex: 1; min-width: 0; }
+        .idea-card-name { font-size: 0.85rem; color: var(--ink-light); }
+        .idea-card-meta { font-size: 0.7rem; color: var(--ink-muted); font-style: italic; margin-top: 1px; }
+        .idea-card-delete {
+            background: none;
+            border: none;
+            color: var(--border);
+            cursor: pointer;
+            font-size: 0.7rem;
+            flex-shrink: 0;
+            transition: color 0.15s;
+        }
+        .idea-card-delete:hover { color: var(--red); }
 
-        @media (max-width: 900px) {
-            .tools-sidebar { display: none; }
+        @media (max-width: 700px) {
+            #view-profile .main-col > div[style*="grid-template-columns"],
+            #view-skills .main-col > div[style*="grid-template-columns"] {
+                grid-template-columns: 1fr !important;
+            }
         }
+
+        /* Skill suggestion popover */
+        .suggest-popover {
+            display: none;
+            flex-direction: column;
+            position: fixed;
+            z-index: 9999;
+            width: 280px;
+            min-height: 50px;
+            max-height: min(360px, calc(100vh - 32px));
+            background: var(--ink);
+            color: var(--paper);
+            padding: 1rem;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            border-left: 3px solid var(--amber);
+        }
+        .suggest-popover.visible { display: flex; }
+        .suggest-popover-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 0.65rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--border);
+            margin-bottom: 0.6rem;
+            flex-shrink: 0;
+        }
+        #suggestPopoverBody {
+            overflow-y: auto;
+            flex: 1;
+            min-height: 0;
+            overscroll-behavior: contain;
+        }
+        .suggest-loading {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 0.82rem;
+            color: var(--border);
+            padding: 0.5rem 0;
+        }
+        .suggest-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            cursor: pointer;
+        }
+        .suggest-item:last-child { border-bottom: none; }
+        .suggest-item input[type="checkbox"] {
+            margin-top: 3px;
+            accent-color: var(--amber);
+            flex-shrink: 0;
+        }
+        .suggest-item-text {
+            font-size: 0.78rem;
+            line-height: 1.4;
+            color: var(--paper);
+        }
+        .suggest-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.75rem;
+            gap: 0.5rem;
+            flex-shrink: 0;
+        }
+        .suggest-add-btn {
+            flex: 1;
+            padding: 0.4rem;
+            background: var(--amber);
+            border: none;
+            color: var(--ink);
+            font-family: 'Playfair Display', serif;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+        .suggest-add-btn:hover { opacity: 0.85; }
+        .suggest-close-btn {
+            padding: 0.4rem 0.75rem;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--border);
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .suggest-close-btn:hover { color: var(--paper); border-color: rgba(255,255,255,0.4); }
+        .suggest-trigger-btn {
+            background: none;
+            border: none;
+            color: var(--amber);
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            letter-spacing: 0.04em;
+            padding: 0;
+            transition: opacity 0.15s;
+        }
+        .suggest-trigger-btn:hover { opacity: 0.7; }
+
+        /* Profile & Skills views — let sections grow freely */
+        #view-profile .log-section-body,
+        #view-skills .log-section-body {
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        /* Skills & Goals page — use the available width instead of one long vertical column */
+        #view-skills .main-col {
+            max-width: 1300px;
+        }
+        #skillInventory {
+            column-width: 300px;
+            column-gap: 1rem;
+        }
+        #skillInventory > div {
+            break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+        }
+        #goalsList {
+            column-width: 300px;
+            column-gap: 1rem;
+        }
+        #goalsList > div {
+            break-inside: avoid;
+            -webkit-column-break-inside: avoid;
+        }
+        @media (max-width: 700px) {
+            #skillInventory, #goalsList {
+                column-width: auto;
+            }
+        }
+
+        /* Practice Tools page — wide enough for a real grid of cards */
+        #view-tools .main-col {
+            max-width: 1100px;
+        }
+
+        /* Full-screen individual tool page */
+        #view-tool-full .main-col {
+            max-width: 1200px;
+        }
+        .tool-frame-wrap {
+            border: 2px solid var(--ink);
+            background: var(--paper);
+            overflow: hidden;
+        }
+        #toolFullFrame {
+            display: block;
+            width: 100%;
+            height: calc(100vh - 220px);
+            min-height: 600px;
+            border: none;
+        }
+
+        /* Idea Vault page */
+        #view-ideas .main-col {
+            max-width: 900px;
+        }
+        #view-ideas .log-section-body {
+            max-height: none;
+            overflow-y: visible;
+        }
+
+        /* Practice Log page */
+        #view-log .main-col {
+            max-width: 900px;
+        }
+        #view-log .log-section-body,
+        #view-log .fav-section-body {
+            max-height: none;
+            overflow-y: visible;
+        }
+        .log-layout-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .log-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        @media (min-width: 1000px) {
+            #view-log .main-col { max-width: 1200px; }
+            .log-layout-grid {
+                grid-template-columns: 1.6fr 1fr;
+                align-items: start;
+            }
+        }
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1.25rem;
+            margin-bottom: 1.1rem;
+        }
+        .calendar-month-label {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.15rem;
+            font-weight: 700;
+            color: var(--ink);
+            min-width: 160px;
+            text-align: center;
+        }
+        .cal-nav-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--ink-muted);
+            padding: 0.3rem 0.7rem;
+            cursor: pointer;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.72rem;
+            letter-spacing: 0.04em;
+            transition: all 0.15s;
+        }
+        .cal-nav-btn:hover { border-color: var(--amber); color: var(--amber); }
+        .cal-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-size: 0.62rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--ink-muted);
+            margin-bottom: 0.4rem;
+        }
+        .cal-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .cal-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            background: var(--paper);
+            position: relative;
+            transition: all 0.15s;
+            font-size: 0.82rem;
+            color: var(--ink-light);
+        }
+        .cal-day.empty { cursor: default; visibility: hidden; }
+        .cal-day:not(.empty):hover { border-color: var(--amber); }
+        .cal-day.today { font-weight: 700; color: var(--amber); border-color: rgba(200,132,26,0.4); }
+        .cal-day.selected { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+        .cal-day.selected.today { color: var(--amber); }
+        .cal-day-dot {
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: var(--amber);
+        }
+        .cal-day.selected .cal-day-dot { background: var(--paper); }
+
+        .weekly-goal-row { margin-bottom: 0.85rem; }
+        .weekly-goal-row:last-child { margin-bottom: 0; }
+        .weekly-goal-row-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.82rem;
+            margin-bottom: 0.3rem;
+        }
+        .weekly-goal-cat { color: var(--ink-light); }
+        .weekly-goal-nums {
+            color: var(--ink-muted);
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+        }
+        .weekly-goal-bar-track {
+            height: 6px;
+            background: var(--paper-dark);
+            overflow: hidden;
+        }
+        .weekly-goal-bar-fill {
+            height: 100%;
+            background: var(--amber);
+            transition: width 0.3s ease;
+        }
+        .weekly-goal-bar-fill.met { background: var(--green); }
 
         /* ── Tool Panel ── */
         .page-wrap {
@@ -1245,11 +1832,41 @@
 <div class="page-wrap" id="view-main">
 <div class="main-col">
 <div class="container">
+
+    <div class="quick-tools">
+        <button class="tool-quick-btn" onclick="openSidebarTool('chord-drone', 'https://grdallas.github.io/chord-drone-embeded/', this)" title="Open Chord Drone">Chord Drone</button>
+        <button class="tool-quick-btn" onclick="openSidebarTool('chord-looper', 'https://grdallas.github.io/chord-looper-embedded/', this)" title="Open Chord Looper">Chord Looper</button>
+        <button class="tool-quick-btn" onclick="openSidebarTool('metronome', 'https://grdallas.github.io/metronome-embedded/', this)" title="Open Metronome">Metronome</button>
+        <button class="tool-quick-btn" onclick="openSidebarTool('polyrhythm', 'https://grdallas.github.io/polyrhythm-trainer-embedded/', this)" title="Open Polyrhythm Trainer">Polyrhythm</button>
+        <button class="tool-quick-btn" onclick="openSidebarTool('scale-explorer', 'https://grdallas.github.io/guitar-scale-visualizer/', this)" title="Open Scale Explorer">Scale Explorer</button>
+    </div>
+
     <div class="header">
-        <h1 class="title">Practice Session<br>Generator</h1>
-        <p class="tagline">a tailored session built around you</p>
+        <h1 class="title">The Practice Lab</h1>
+        <p class="tagline">an intelligent practice companion for musicians</p>
+        <p class="daily-quote" id="dailyQuote"></p>
         <div class="divider"></div>
-        <a href="#" class="back-link" onclick="showView('profile'); return false;" style="font-size:0.7rem; letter-spacing:0.1em;">My Profile →</a>
+        <div class="nav-bar">
+            <a href="#" onclick="showView('profile'); return false;">My Profile</a>
+            <span class="nav-sep">&middot;</span>
+            <a href="#" onclick="showView('skills'); return false;">Skills &amp; Goals</a>
+            <span class="nav-sep">&middot;</span>
+            <a href="#" onclick="showView('settings'); return false;">Settings</a>
+            <span class="nav-sep">&middot;</span>
+            <a href="#" onclick="showView('tools'); return false;">Practice Tools</a>
+            <span class="nav-sep">&middot;</span>
+            <a href="#" onclick="showView('ideas'); return false;">Idea Vault</a>
+            <span class="nav-sep">&middot;</span>
+            <a href="#" onclick="showView('log'); return false;">Practice Log</a>
+        </div>
+    </div>
+
+    <div style="display:flex; justify-content:center; align-items:center; gap:0.75rem; margin-bottom:1.75rem;">
+        <label class="ios-switch" for="deepPracticeToggle">
+            <input type="checkbox" id="deepPracticeToggle" onchange="toggleDeepPracticeMode()">
+            <span class="ios-switch-track"><span class="ios-switch-thumb"></span></span>
+        </label>
+        <span style="font-family:'Libre Baskerville',serif; font-size:0.85rem; color:var(--ink-light);">Deep Practice Mode</span>
     </div>
 
     <div class="form-section">
@@ -1318,29 +1935,32 @@
                 </div>
             </div>
 
-            <div class="form-row">
-                <label for="primarySelect">Primary Focus</label>
-                <select id="primarySelect">
-                    <option value="Fundamentals">Fundamentals</option>
-                    <option value="Improvisation">Improvisation</option>
-                    <option value="Chords & Harmony">Chords &amp; Harmony</option>
-                    <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
-                    <option value="Ear Training">Ear Training</option>
-                    <option value="Repertoire">Repertoire</option>
-                </select>
-            </div>
+            <div id="focusFieldsWrapper">
+                <div class="form-row">
+                    <label for="primarySelect">Primary Focus</label>
+                    <select id="primarySelect">
+                        <option value="Fundamentals">Fundamentals</option>
+                        <option value="Improvisation">Improvisation</option>
+                        <option value="Chords & Harmony">Chords &amp; Harmony</option>
+                        <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
+                        <option value="Ear Training">Ear Training</option>
+                        <option value="Repertoire">Repertoire</option>
+                        <option value="General">General</option>
+                    </select>
+                </div>
 
-            <div class="form-row">
-                <label for="secondarySelect">Secondary Focus <span style="font-style:italic; text-transform:none; font-weight:normal;">(optional)</span></label>
-                <select id="secondarySelect">
-                    <option value="">None</option>
-                    <option value="Fundamentals">Fundamentals</option>
-                    <option value="Improvisation">Improvisation</option>
-                    <option value="Chords & Harmony">Chords &amp; Harmony</option>
-                    <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
-                    <option value="Ear Training">Ear Training</option>
-                    <option value="Repertoire">Repertoire</option>
-                </select>
+                <div class="form-row" id="secondaryFocusRow">
+                    <label for="secondarySelect">Secondary Focus <span style="font-style:italic; text-transform:none; font-weight:normal;">(optional)</span></label>
+                    <select id="secondarySelect">
+                        <option value="">None</option>
+                        <option value="Fundamentals">Fundamentals</option>
+                        <option value="Improvisation">Improvisation</option>
+                        <option value="Chords & Harmony">Chords &amp; Harmony</option>
+                        <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
+                        <option value="Ear Training">Ear Training</option>
+                        <option value="Repertoire">Repertoire</option>
+                    </select>
+                </div>
             </div>
 
             <div class="form-row">
@@ -1357,17 +1977,11 @@
             </div>
 
             <div class="form-row">
-                <label for="focus">What are you working on? <span style="font-style:italic; text-transform:none;">(optional)</span></label>
+                <label for="focus">What are you working on? <span style="font-style:italic; text-transform:none;">(optional, but for best results)</span></label>
                 <textarea id="focus" placeholder="e.g. I'm trying to get more comfortable improvising over ii-V-Is in flat keys, my time feel falls apart at faster tempos..." maxlength="500"></textarea>
             </div>
 
-            <div class="custom-instructions-wrap">
-                <label class="custom-instructions-label" for="customInstructions">
-                    Customize Your Coach <span>(optional — saved automatically)</span>
-                </label>
-                <textarea class="custom-instructions-textarea" id="customInstructions" maxlength="1000" placeholder="e.g. Always include a transcription exercise. Never suggest singing exercises. I'm focused on bebop vocabulary. Suggest Wes Montgomery often."></textarea>
-                <div class="custom-instructions-hint">These instructions shape every session you generate. Be as specific as you like.</div>
-            </div>
+
         </div>
     </div>
 
@@ -1404,8 +2018,9 @@
                 <button class="timer-panel-btn primary" id="timerPauseBtn" onclick="timerTogglePause()" title="Pause/Resume">⏸</button>
                 <button class="timer-panel-btn" onclick="timerExtend(120)" title="+2 minutes">+2</button>
                 <button class="timer-panel-btn" onclick="timerExtend(300)" title="+5 minutes">+5</button>
+                <button class="timer-panel-btn" onclick="toggleStepStar()" id="timerStarBtn" title="Star this step — more like it in future sessions">☆</button>
                 <button class="timer-panel-btn" onclick="timerComplete()" id="timerCompleteBtn" title="Log this step and continue" style="color:var(--amber); font-size:0.65rem; letter-spacing:0.04em;">Log</button>
-                <button class="timer-panel-btn" onclick="timerSkip()" title="Skip without logging">⏭</button>
+                <button class="timer-panel-btn" onclick="timerSkip()" title="Move to next step (Log first if you want this step recorded)">⏭ Next</button>
                 <button class="timer-panel-btn danger" onclick="timerStop()" title="Stop session">✕</button>
             </div>
             </div>
@@ -1426,48 +2041,20 @@
         </div>
     </div>
 
-    <!-- Inline Practice Log -->
-    <div class="log-section" id="inlineLogSection">
-        <div class="log-section-header" onclick="toggleInlineLog()">
-            <span class="log-section-icon">📓</span>
-            <span class="log-section-title">Practice Journal</span>
-            <span class="log-section-count" id="logSectionCount"></span>
-            <span class="log-section-chevron">›</span>
-        </div>
-        <div class="log-section-body" id="inlineLogBody"></div>
-    </div>
-
-    <!-- Favorites Section -->
-    <div class="fav-section" id="favSection" style="display:none;">
-        <div class="fav-section-header" onclick="toggleFavSection()">
-            <span class="fav-section-icon">⭐</span>
-            <span class="fav-section-title">Favorites</span>
-            <span class="fav-section-count" id="favSectionCount"></span>
-            <span class="fav-section-chevron">›</span>
-        </div>
-        <div class="fav-section-body" id="favSectionBody"></div>
-    </div>
-
+    <!-- Ask panel is defined below, outside all view containers -->
     <div class="log-toast" id="logToast">Session saved ✓</div>
     <div class="footer">
         Built by <a href="https://gregdallas.com">Greg Dallas</a>
+        <div style="margin-top:0.5rem; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.72rem; color:var(--ink-muted);">AI-generated — theory, tempos, and technical details can occasionally be wrong. Verify anything before relying on it.</div>
     </div>
 
-
-
-    <!-- Ask popover -->
-    <div class="ask-popover" id="askPopover">
-        <div class="ask-popover-header">Ask about this step</div>
-        <textarea class="ask-popover-input" id="askInput" placeholder="e.g. What does motivic development mean?"></textarea>
-        <div class="ask-popover-actions">
-            <button class="ask-close-btn" onclick="closeAskPopover()">Close</button>
-            <button class="ask-submit-btn" id="askSubmitBtn" onclick="submitAskQuestion()">Ask</button>
-        </div>
-        <div class="ask-response" id="askResponse"></div>
-    </div>
 </div><!-- .container -->
 </div><!-- .main-col -->
 
+</div><!-- .page-wrap -->
+
+<!-- Tool panel (Chord Drone / Chord Looper / Metronome): lives outside all view containers
+     so it can be opened from the Practice Tools page as well as the generator and session steps -->
 <div class="tool-panel" id="toolPanel">
     <div class="tool-panel-header">
         <span class="tool-panel-title" id="toolPanelTitle">Chord Drone</span>
@@ -1476,20 +2063,206 @@
     <iframe id="toolPanelFrame" src="" title="Practice Tool"></iframe>
 </div>
 
-    <!-- Tools Sidebar -->
-    <div class="tools-sidebar" id="toolsSidebar">
-        <button class="tool-trigger-btn" onclick="openSidebarTool('chord-drone', 'https://grdallas.github.io/chord-drone-embeded/', this)" id="sidebar-chord-drone">
-            <span class="tool-trigger-icon">🎵</span> Chord Drone
-        </button>
-        <button class="tool-trigger-btn" onclick="openSidebarTool('chord-looper', 'https://grdallas.github.io/chord-looper-embedded/', this)" id="sidebar-chord-looper">
-            <span class="tool-trigger-icon">🔁</span> Chord Looper
-        </button>
-        <button class="tool-trigger-btn" onclick="openSidebarTool('metronome', 'https://grdallas.github.io/metronome-embedded/', this)" id="sidebar-metronome">
-            <span class="tool-trigger-icon">🥁</span> Metronome
-        </button>
+<!-- Ask panel: a persistent chat about the step you're on, supports follow-up questions.
+     Sits on the right, same as the tool panel — the two never open at once. -->
+<div class="ask-panel" id="askPanel">
+    <div class="ask-panel-header">
+        <div>
+            <div class="ask-panel-title">Ask</div>
+            <span class="ask-panel-subtitle" id="askPanelSubtitle"></span>
+        </div>
+        <button class="ask-panel-close" onclick="closeAskPanel()" title="Close">✕</button>
     </div>
+    <div class="ask-panel-messages" id="askMessages"></div>
+    <div class="ask-panel-input-row">
+        <textarea class="ask-panel-input" id="askInput" placeholder="Ask a question..." rows="1"></textarea>
+        <button class="ask-panel-send" id="askSubmitBtn" onclick="submitAskQuestion()">Ask</button>
+    </div>
+</div>
 
-</div><!-- .page-wrap -->
+<!-- Skill suggestion popover: lives outside all view containers (view-main / view-profile / view-settings)
+     so position:fixed works no matter which page is active when it's triggered -->
+<div class="suggest-popover" id="suggestPopover">
+    <div class="suggest-popover-title" id="suggestPopoverTitle">Suggestions</div>
+    <div id="suggestPopoverBody"><div class="suggest-loading">Generating suggestions...</div></div>
+    <div class="suggest-actions">
+        <button class="suggest-close-btn" onclick="closeSuggestPopover()">Close</button>
+        <button class="suggest-add-btn" onclick="addSuggestedItems()">Add Selected</button>
+    </div>
+</div>
+
+<!-- ── Settings View ──────────────────────────────────────────────────────── -->
+<div id="view-settings" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('main'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Generator</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);">Settings</h1>
+            <p class="tagline">configure your experience</p>
+            <div class="divider"></div>
+        </div>
+
+        <!-- Session Defaults -->
+        <div class="form-section" style="margin-bottom:1.5rem;">
+            <div class="form-section-label">Session Defaults</div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+                <div class="form-row">
+                    <label for="defaultInstrument">Default Instrument</label>
+                    <select id="defaultInstrument">
+                        <option value="">— No default —</option>
+                        <optgroup label="Strings &amp; Fretted">
+                            <option value="guitar">Guitar</option>
+                            <option value="bass guitar">Bass Guitar</option>
+                            <option value="violin">Violin</option>
+                            <option value="viola">Viola</option>
+                            <option value="cello">Cello</option>
+                            <option value="upright bass">Upright Bass</option>
+                        </optgroup>
+                        <optgroup label="Keys">
+                            <option value="piano">Piano</option>
+                            <option value="organ">Organ</option>
+                        </optgroup>
+                        <optgroup label="Wind">
+                            <option value="trumpet">Trumpet</option>
+                            <option value="trombone">Trombone</option>
+                            <option value="saxophone">Saxophone</option>
+                            <option value="clarinet">Clarinet</option>
+                            <option value="flute">Flute</option>
+                            <option value="tuba">Tuba</option>
+                            <option value="french horn">French Horn</option>
+                        </optgroup>
+                        <optgroup label="Rhythm">
+                            <option value="drums">Drums</option>
+                            <option value="percussion">Percussion</option>
+                        </optgroup>
+                        <option value="voice">Voice</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="defaultGenre">Default Genre</label>
+                    <select id="defaultGenre">
+                        <option value="">— No default —</option>
+                        <option value="Jazz">Jazz</option>
+                        <option value="Classical">Classical</option>
+                        <option value="Blues">Blues</option>
+                        <option value="Rock">Rock</option>
+                        <option value="Latin">Latin</option>
+                        <option value="Gospel">Gospel</option>
+                        <option value="Folk">Folk</option>
+                        <option value="R&B">R&amp;B</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="defaultDifficulty">Default Difficulty</label>
+                    <select id="defaultDifficulty">
+                        <option value="">— No default —</option>
+                        <option value="1">Foundational</option>
+                        <option value="2">Developing</option>
+                        <option value="3">Fluent</option>
+                        <option value="4">Advanced</option>
+                        <option value="5">Expert</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label for="defaultTime">Default Session Length</label>
+                    <select id="defaultTime">
+                        <option value="">— No default —</option>
+                        <option value="15">15 min</option>
+                        <option value="30">30 min</option>
+                        <option value="45">45 min</option>
+                        <option value="60">60 min</option>
+                        <option value="90">90 min</option>
+                        <option value="120">2 hours</option>
+                    </select>
+                </div>
+            </div>
+            <button class="generate-btn" onclick="saveSettings()" style="margin-top:0.75rem; font-size:0.9rem; padding:0.75rem;">Save Defaults</button>
+        </div>
+
+        <!-- Session Pacing -->
+        <div class="form-section" style="margin-bottom:1.5rem;">
+            <div class="form-section-label">Session Pacing</div>
+            <div class="form-row">
+                <label for="pacingSlider">How much a session should move around — <span id="pacingLabel">Balanced</span></label>
+                <div class="slider-wrap">
+                    <span class="slider-edge-label">Deep Focus</span>
+                    <input type="range" id="pacingSlider" min="1" max="5" value="3" step="1">
+                    <span class="slider-edge-label">Highly Varied</span>
+                </div>
+                <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);margin-top:0.35rem;">Deep Focus means a session might be built around almost one thing, worked for a long stretch. Highly Varied means more, shorter steps that jump between different activities.</div>
+            </div>
+        </div>
+
+        <!-- Coach Preferences -->
+        <div class="form-section" style="margin-bottom:1.5rem;">
+            <div class="form-section-label">Coach Preferences</div>
+            <div class="form-row">
+                <label for="customInstructions">Customize Your Coach <span style="font-style:italic;text-transform:none;letter-spacing:0;font-size:0.72rem;">(saved automatically)</span></label>
+                <textarea id="customInstructions" maxlength="1000" placeholder="e.g. Always include a transcription exercise. Never suggest singing exercises. I'm focused on bebop vocabulary. Suggest Wes Montgomery often." style="min-height:100px;"></textarea>
+                <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);margin-top:0.35rem;">These instructions shape every session you generate.</div>
+            </div>
+        </div>
+
+        <!-- Profile Integration -->
+        <div class="form-section">
+            <div class="form-section-label">Profile Integration</div>
+            <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0;">
+                <input type="checkbox" id="useProfileToggle" checked style="accent-color:var(--amber); cursor:pointer; width:16px; height:16px;">
+                <label for="useProfileToggle" style="font-size:0.85rem; color:var(--ink-light); cursor:pointer; line-height:1.5;">Use my profile when generating sessions<br><span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);">When enabled, your instrument, influences, weaknesses, goals, and skill inventory shape every session.</span></label>
+            </div>
+        </div>
+
+        <!-- Mindset Warm-up -->
+        <div class="form-section">
+            <div class="form-section-label">Mindset Warm-up</div>
+            <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0;">
+                <input type="checkbox" id="includeMindsetToggle" style="accent-color:var(--amber); cursor:pointer; width:16px; height:16px;">
+                <label for="includeMindsetToggle" style="font-size:0.85rem; color:var(--ink-light); cursor:pointer; line-height:1.5;">Start sessions with a brief centering exercise<br><span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);">Adds a short (2-5 minute) breath or focus exercise as the first step, before the instrument work begins.</span></label>
+            </div>
+        </div>
+
+        <!-- Advanced Tools -->
+        <div class="form-section">
+            <div class="form-section-label">Advanced Tools</div>
+            <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0;">
+                <input type="checkbox" id="includePolyrhythmToggle" style="accent-color:var(--amber); cursor:pointer; width:16px; height:16px;">
+                <label for="includePolyrhythmToggle" style="font-size:0.85rem; color:var(--ink-light); cursor:pointer; line-height:1.5;">Allow the Polyrhythm Trainer in generated sessions<br><span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);">Only ever suggested for Advanced or Expert difficulty sessions — this just opts you in when it fits, it won't show up otherwise.</span></label>
+            </div>
+        </div>
+
+        <!-- About the AI -->
+        <div class="form-section">
+            <div class="form-section-label">About the AI</div>
+            <p style="font-size:0.85rem; color:var(--ink-light); line-height:1.6;">Sessions are generated by an AI model, not looked up from a verified source. It's built to double-check its own work on things like tempo math, chord tones, and physically playable technique — but it can still occasionally get a specific detail wrong, especially on less common instruments or more obscure theory. Treat anything technical (a scale choice, an interval, a fingering) as worth a moment's sanity check before you build a habit around it, the same way you would with any other single source.</p>
+        </div>
+
+        <!-- Model (Testing) -->
+        <div class="form-section">
+            <div class="form-section-label">AI Model — Testing Only</div>
+            <select id="modelTierSelect" onchange="saveModelTier()">
+                <option value="fable">Fable (most capable, most expensive)</option>
+                <option value="opus">Opus (strong, moderate cost)</option>
+                <option value="sonnet">Sonnet (fastest, cheapest)</option>
+            </select>
+            <p style="font-size:0.68rem; color:var(--ink-muted); font-style:italic; margin-top:0.4rem;">Applies to every AI call — generating, swapping, adjusting, and asking. This is here for comparing quality/cost while testing, not a real user-facing setting yet.</p>
+        </div>
+
+        <!-- Backup & Restore -->
+        <div class="form-section">
+            <div class="form-section-label">Backup & Restore</div>
+            <p style="font-size:0.85rem; color:var(--ink-light); line-height:1.6; margin-bottom:0.75rem;">Your profile, goals, skills, custom instructions, and practice log all live only in this specific browser — they won't follow you to a different browser, computer, or copy of this file. Export a backup periodically, and import it to restore everything (or carry it somewhere else).</p>
+            <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+                <button class="generate-btn" onclick="exportBackup()" style="flex:1; min-width:160px;">Export Backup</button>
+                <button class="generate-btn" onclick="document.getElementById('importBackupInput').click()" style="flex:1; min-width:160px;">Import Backup</button>
+            </div>
+            <input type="file" id="importBackupInput" accept="application/json" style="display:none" onchange="importBackup(this.files[0]); this.value='';">
+            <div id="backupStatus" style="font-family:'Cormorant Garamond',serif; font-style:italic; font-size:0.78rem; color:var(--ink-muted); margin-top:0.5rem;"></div>
+        </div>
+
+    </div>
+</div>
 
 <!-- ── Profile View ─────────────────────────────────────────────────────── -->
 <div id="view-profile" style="display:none;" class="page-wrap">
@@ -1505,6 +2278,15 @@
         <!-- About You -->
         <div class="form-section" style="margin-bottom:1.5rem;">
             <div class="form-section-label">About You</div>
+
+            <!-- Read view (shown after save) -->
+            <div class="profile-read" id="profileReadView">
+                <div id="profileReadContent"></div>
+                <button class="profile-edit-btn" onclick="showProfileEdit()">✎ Edit Profile</button>
+            </div>
+
+            <!-- Edit view -->
+            <div class="profile-edit" id="profileEditView">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
                 <div class="form-row">
                     <label for="profileInstrument">Primary Instrument</label>
@@ -1581,55 +2363,266 @@
                 <label for="profileInfluences">Main influences or players you want to sound like</label>
                 <textarea id="profileInfluences" placeholder="e.g. Wes Montgomery, Jim Hall, Pat Metheny..." style="min-height:55px;"></textarea>
             </div>
-            <button class="generate-btn" onclick="saveProfile()" style="margin-top:0.75rem; font-size:0.9rem; padding:0.75rem;">Save Profile</button>
+                <button class="generate-btn" onclick="saveProfile()" style="margin-top:0.75rem; font-size:0.9rem; padding:0.75rem;">Save Profile</button>
+            </div><!-- end profile-edit -->
         </div>
 
-        <!-- Goals -->
-        <div class="log-section" style="margin-bottom:1.5rem;">
-            <div class="log-section-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="log-section-icon">🎯</span>
-                <span class="log-section-title">Goals</span>
-                <span class="log-section-chevron">›</span>
+    </div>
+</div>
+
+<!-- ── Skills & Goals View ──────────────────────────────────────────────── -->
+<div id="view-skills" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('main'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Generator</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);">Skills &amp; Goals</h1>
+            <p class="tagline">track your growth</p>
+            <div class="divider"></div>
+        </div>
+
+        <!-- Skills, Goals, Weekly Practice Goals — auto-fits to available width, collapses to fewer columns as it narrows, stacks fully on mobile -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(380px, 1fr)); gap:1.5rem; align-items:start;">
+
+            <!-- Skill Inventory -->
+            <div class="log-section open">
+                <div class="log-section-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="log-section-icon"></span>
+                    <span class="log-section-title">Skill Inventory</span>
+                    <span class="log-section-chevron">›</span>
+                </div>
+                <div class="log-section-body" style="padding:1rem;">
+                    <div style="display:flex; gap:1rem; margin-bottom:0.75rem; font-family:'Cormorant Garamond',serif; font-size:0.75rem; font-style:italic; color:var(--ink-muted);">
+                        <span>○ Not started</span>
+                        <span style="color:var(--amber);">◑ Working</span>
+                        <span style="color:var(--green);">● Mastered</span>
+                    </div>
+                    <button id="seedBtn" onclick="seedSkills()"
+                        style="width:100%; padding:0.55rem; background:none; border:1px solid var(--amber); font-family:'Cormorant Garamond',serif; font-size:0.82rem; font-style:italic; color:var(--amber); cursor:pointer; margin-bottom:0.75rem; transition:all 0.2s;"
+                        onmouseover="this.style.background='var(--amber)';this.style.color='var(--ink)'"
+                        onmouseout="this.style.background='none';this.style.color='var(--amber)'">
+                        ◆ Generate with AI
+                    </button>
+                    <div id="skillInventory"></div>
+                    <div style="display:flex; gap:0.4rem; margin-top:0.75rem;">
+                        <input type="text" id="newCatInput" placeholder="Add a category..." maxlength="60"
+                            style="flex:1; padding:0.4rem 0.6rem; border:1px solid var(--border); background:var(--paper); font-family:inherit; font-size:0.78rem; outline:none;"
+                            onkeydown="if(event.key==='Enter') addSkillCategory()">
+                        <button onclick="addSkillCategory()" class="regen-btn" style="padding:0.4rem 0.7rem; font-size:0.72rem;">+ Category</button>
+                    </div>
+                </div>
             </div>
-            <div class="log-section-body" style="padding:1rem 1.5rem;">
-                <div id="goalsList"></div>
-                <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
-                    <input type="text" id="goalInput" placeholder="Add a goal..." maxlength="200"
-                        style="flex:1; padding:0.5rem 0.75rem; border:1px solid var(--border); background:var(--paper); font-family:inherit; font-size:0.82rem; outline:none;"
-                        onkeydown="if(event.key==='Enter') addGoal()">
-                    <button onclick="addGoal()" class="regen-btn" style="padding:0.5rem 1rem; font-size:0.78rem;">Add</button>
+
+            <!-- Goals -->
+            <div class="log-section open">
+                <div class="log-section-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="log-section-icon"></span>
+                    <span class="log-section-title">Goals</span>
+                    <span class="log-section-chevron">›</span>
+                </div>
+                <div class="log-section-body" style="padding:1rem;">
+                    <button id="seedGoalsBtn" onclick="seedGoals()"
+                        style="width:100%; padding:0.55rem; background:none; border:1px solid var(--amber); font-family:'Cormorant Garamond',serif; font-size:0.82rem; font-style:italic; color:var(--amber); cursor:pointer; margin-bottom:0.75rem; transition:all 0.2s;"
+                        onmouseover="this.style.background='var(--amber)';this.style.color='var(--ink)'"
+                        onmouseout="this.style.background='none';this.style.color='var(--amber)'">
+                        ◆ Generate goals with AI
+                    </button>
+                    <div id="goalsList"></div>
+                    <div style="display:flex; gap:0.4rem; margin-top:0.75rem;">
+                        <input type="text" id="goalInput" placeholder="Add a goal..." maxlength="200"
+                            style="flex:1; padding:0.4rem 0.6rem; border:1px solid var(--border); background:var(--paper); font-family:inherit; font-size:0.78rem; outline:none;"
+                            onkeydown="if(event.key==='Enter') addGoal()">
+                        <button onclick="addGoal()" class="regen-btn" style="padding:0.4rem 0.7rem; font-size:0.72rem;">Add</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Weekly Practice Goals -->
+            <div class="log-section open">
+                <div class="log-section-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="log-section-icon"></span>
+                    <span class="log-section-title">Weekly Practice Goals</span>
+                    <span class="log-section-chevron">›</span>
+                </div>
+                <div class="log-section-body" style="padding:1rem;">
+                    <div style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);margin-bottom:0.85rem;">Set a target number of minutes per week for each category. Progress against these shows up on your Practice Log.</div>
+                    <div id="weeklyGoalsInputs" style="display:flex; flex-direction:column; gap:0.6rem;"></div>
+                    <button id="saveWeeklyGoalsBtn" class="regen-btn" onclick="saveWeeklyGoals()" style="margin-top:0.85rem; width:100%;">Save Weekly Goals</button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Practice Tools View ──────────────────────────────────────────────── -->
+<div id="view-tools" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('main'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Generator</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);">Practice Tools</h1>
+            <p class="tagline">standalone instruments for focused practice, open any of them anytime</p>
+            <div class="divider"></div>
+        </div>
+
+        <div class="tools-grid" id="toolsGrid">
+            <div class="tool-card" id="toolcard-chord-drone" onclick="openToolFullPage('chord-drone', 'https://grdallas.github.io/chord-drone-embeded/')">
+                <div class="tool-card-name">Chord Drone</div>
+                <div class="tool-card-desc">Sustain a chord so you can hear a harmony clearly while you improvise or work out a line against it.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" id="toolcard-chord-looper" onclick="openToolFullPage('chord-looper', 'https://grdallas.github.io/chord-looper-embedded/')">
+                <div class="tool-card-name">Chord Looper</div>
+                <div class="tool-card-desc">Loop a chord progression on repeat so you can practice soloing or comping over changes.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" id="toolcard-metronome" onclick="openToolFullPage('metronome', 'https://grdallas.github.io/metronome-embedded/')">
+                <div class="tool-card-name">Metronome</div>
+                <div class="tool-card-desc">A straightforward click track for building time feel at any tempo.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" id="toolcard-polyrhythm" onclick="openToolFullPage('polyrhythm', 'https://grdallas.github.io/polyrhythm-trainer-embedded/')">
+                <div class="tool-card-name">Polyrhythm Trainer</div>
+                <div class="tool-card-desc">Hear and internalize rhythmic superimpositions like 3-against-4 or 5-against-4, with a visual and audio guide for each voice.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" id="toolcard-scale-explorer" onclick="openToolFullPage('scale-explorer', 'https://grdallas.github.io/guitar-scale-visualizer/')">
+                <div class="tool-card-name">Scale Explorer</div>
+                <div class="tool-card-desc">See any scale or mode laid out across the whole fretboard — pick from the list or just type a root and scale name.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Full-Screen Tool View — opened only from the Practice Tools grid above;
+     the quick-access bar on the main page still opens the small floating
+     panel (openSidebarTool), a deliberately lighter-weight glance-at-a-tool
+     path since you're mid-session there, not making a dedicated trip. ── -->
+<div id="view-tool-full" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('tools'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Practice Tools</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);" id="toolFullTitle">Tool</h1>
+            <div class="divider"></div>
+        </div>
+
+        <div class="tool-frame-wrap">
+            <iframe id="toolFullFrame" src="" title="Practice Tool"></iframe>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Idea Vault View ────────────────────────────────────────────────────── -->
+<div id="view-ideas" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('main'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Generator</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);">Idea Vault</h1>
+            <p class="tagline">capture a little thing you like before you lose it</p>
+            <div class="divider"></div>
+        </div>
+
+        <!-- Recorder -->
+        <div class="form-section" style="margin-bottom:1.5rem;">
+            <div class="form-section-label">New Recording</div>
+
+            <div id="ideaRecorderIdle">
+                <button class="idea-record-btn" id="ideaRecordBtn" onclick="ideaStartRecording()">● Record</button>
+                <div style="font-size:0.72rem;color:var(--ink-muted);font-style:italic;margin-top:0.6rem;">Up to 3 minutes. Your browser will ask for microphone permission the first time.</div>
+                <div id="ideaRecordError" style="display:none;color:var(--red);font-size:0.78rem;margin-top:0.5rem;"></div>
+            </div>
+
+            <div id="ideaRecorderActive" style="display:none;">
+                <div style="display:flex;align-items:center;gap:0.9rem;">
+                    <button class="idea-record-btn recording" onclick="ideaStopRecording()">⏹ Stop</button>
+                    <span id="ideaRecordTimer" style="font-family:'Playfair Display',serif;font-size:1.15rem;color:var(--ink);">0:00</span>
+                </div>
+            </div>
+
+            <div id="ideaRecorderPreview" style="display:none;">
+                <audio id="ideaPreviewPlayer" controls style="width:100%;margin-bottom:0.9rem;"></audio>
+                <div class="form-row">
+                    <label for="ideaNameInput">Name</label>
+                    <input type="text" id="ideaNameInput" placeholder="e.g. Nice diminished pair on the way to Dm" maxlength="120">
+                </div>
+                <div class="form-row" style="margin-top:0.6rem;">
+                    <label for="ideaCategoryInput">Category <span style="font-style:italic;text-transform:none;letter-spacing:0;font-size:0.72rem;">(reuse an existing one to group similar ideas together)</span></label>
+                    <input type="text" id="ideaCategoryInput" list="ideaCategoryList" placeholder="e.g. Diminished harmony" maxlength="60">
+                    <datalist id="ideaCategoryList"></datalist>
+                </div>
+                <div style="display:flex;gap:0.5rem;margin-top:0.85rem;">
+                    <button class="generate-btn" onclick="ideaSave()" style="flex:1;">Save Idea</button>
+                    <button class="regen-btn" onclick="ideaDiscard()">Discard</button>
                 </div>
             </div>
         </div>
 
-        <!-- Skill Inventory -->
-        <div class="log-section">
-            <div class="log-section-header" onclick="this.parentElement.classList.toggle('open')">
-                <span class="log-section-icon">📊</span>
-                <span class="log-section-title">Skill Inventory</span>
-                <span class="log-section-chevron">›</span>
-            </div>
-            <div class="log-section-body" style="padding:1rem 1.5rem;">
-                <div style="display:flex; gap:1.5rem; margin-bottom:0.75rem; font-family:'Cormorant Garamond',serif; font-size:0.78rem; font-style:italic; color:var(--ink-muted);">
-                    <span>○ Not started</span>
-                    <span style="color:var(--amber);">◑ Working on it</span>
-                    <span style="color:var(--green);">● Mastered</span>
+        <!-- Browse -->
+        <div class="form-section">
+            <div class="form-section-label">Your Ideas</div>
+            <input type="text" id="ideaFilterInput" placeholder="Filter by name or category..." oninput="ideaRenderList()" style="margin-bottom:1rem;">
+            <div id="ideaListWrap"><div class="log-empty">Loading...</div></div>
+        </div>
+
+    </div>
+</div>
+
+<!-- ── Practice Log View ──────────────────────────────────────────────────── -->
+<div id="view-log" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('main'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Generator</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);">Practice Log</h1>
+            <p class="tagline">every session and step you've recorded, in one place</p>
+            <div class="divider"></div>
+        </div>
+
+        <div class="log-layout-grid">
+            <div class="form-section" style="margin-bottom:0;">
+                <div class="calendar-header">
+                    <button class="cal-nav-btn" onclick="calendarPrevMonth()" title="Previous month">‹</button>
+                    <span class="calendar-month-label" id="calendarMonthLabel">—</span>
+                    <button class="cal-nav-btn" onclick="calendarGoToday()" title="Jump to today">Today</button>
+                    <button class="cal-nav-btn" onclick="calendarNextMonth()" title="Next month">›</button>
                 </div>
-                <button id="seedBtn" onclick="seedSkills()"
-                    style="width:100%; padding:0.65rem; background:none; border:1px solid var(--amber); font-family:'Cormorant Garamond',serif; font-size:0.88rem; font-style:italic; color:var(--amber); cursor:pointer; margin-bottom:1rem; transition:all 0.2s;"
-                    onmouseover="this.style.background='var(--amber)';this.style.color='var(--ink)'"
-                    onmouseout="this.style.background='none';this.style.color='var(--amber)'">
-                    ✦ Generate skill categories with AI
-                </button>
-                <div id="skillInventory"></div>
-                <div style="display:flex; gap:0.5rem; margin-top:1rem;">
-                    <input type="text" id="newCatInput" placeholder="Add a category..." maxlength="60"
-                        style="flex:1; padding:0.5rem 0.75rem; border:1px solid var(--border); background:var(--paper); font-family:inherit; font-size:0.82rem; outline:none;"
-                        onkeydown="if(event.key==='Enter') addSkillCategory()">
-                    <button onclick="addSkillCategory()" class="regen-btn" style="padding:0.5rem 1rem; font-size:0.78rem;">Add Category</button>
+                <div class="cal-weekdays">
+                    <span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span>
+                </div>
+                <div class="cal-days" id="calendarGrid"></div>
+            </div>
+
+            <div class="log-sidebar">
+                <div class="form-section" style="margin-bottom:0;">
+                    <div class="form-section-label">This Week</div>
+                    <div id="weeklyProgressBody"></div>
+                </div>
+
+                <div class="form-section" style="margin-bottom:0;">
+                    <div class="form-section-label" id="calendarDayDetailLabel">Today</div>
+                    <div id="calendarDayDetailBody"></div>
                 </div>
             </div>
         </div>
+
+        <div class="fav-section open" id="favSection">
+            <div class="fav-section-header" onclick="toggleFavSection()">
+                <span class="fav-section-icon"></span>
+                <span class="fav-section-title">Favorites</span>
+                <span class="fav-section-count" id="favSectionCount"></span>
+                <span class="fav-section-chevron">›</span>
+            </div>
+            <div class="fav-section-body" id="favSectionBody"></div>
+        </div>
+
+        <button class="log-clear-btn" onclick="clearAllLog()" style="margin-top:1rem;">Clear all entries</button>
 
     </div>
 </div>
@@ -1640,6 +2633,8 @@
     let currentPrimaryFocus = 'Fundamentals';
     let currentSecondaryFocus = '';
     let currentTime = '30';
+    let currentView = 'main';
+    let deepPracticeMode = false;
 
     async function generateSession() {
         const instrumentSelectEl = document.getElementById('instrumentSelect');
@@ -1653,8 +2648,12 @@
         const genre = genreSelectEl.value === 'Other'
             ? document.getElementById('genreOther').value.trim() || 'Other'
             : genreSelectEl.value;
-        const primaryFocus = document.getElementById('primarySelect').value;
-        const secondaryFocus = document.getElementById('secondarySelect').value;
+        const primarySelectVal = document.getElementById('primarySelect').value;
+        // "General" is the one place that spreads a session across categories now —
+        // for both regular and Deep Practice sessions alike; Deep Practice no
+        // longer forces this itself, since focus selection works the same either way.
+        const primaryFocus = primarySelectVal === 'General' ? '' : primarySelectVal;
+        const secondaryFocus = primarySelectVal === 'General' ? '' : document.getElementById('secondarySelect').value;
         const time = document.getElementById('timeSelect').value;
         const focus = document.getElementById('focus').value.trim();
         const btn = document.getElementById('generateBtn');
@@ -1669,34 +2668,66 @@
 
         const timeLabel = time >= 120 ? `${time / 60} hours` : `${time} minutes`;
 
+        // Pull in Profile + Goals + Skill Inventory (respecting the "Use my profile" toggle)
+        // and Coach Preferences — these were being saved but never actually sent.
+        let profile = {};
+        let goals = [];
+        let skills = [];
+        let likedSteps = [];
+        let includeMindset = false;
+        let includePolyrhythm = false;
+        let pacing = 3;
+        try {
+            const settings = JSON.parse(localStorage.getItem('practiceLabSettings') || '{}');
+            const useProfile = settings.useProfile !== false;
+            if (useProfile) {
+                profile = JSON.parse(localStorage.getItem('practiceLabProfile') || '{}');
+                goals = JSON.parse(localStorage.getItem('practiceLabGoals') || '[]');
+                skills = JSON.parse(localStorage.getItem('practiceLabSkills') || '[]');
+                likedSteps = JSON.parse(localStorage.getItem('practiceLabLikedSteps') || '[]').slice(0, 15);
+            }
+            includeMindset = settings.includeMindset === true;
+            includePolyrhythm = settings.includePolyrhythm === true;
+            pacing = settings.pacing || 3;
+        } catch (e) {}
+        let customInstructions = '';
+        try { customInstructions = localStorage.getItem('customInstructions') || ''; } catch (e) {}
+
         try {
             const response = await fetch("https://practice-lab-proxy.gregdallasmusic.workers.dev", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "generate",
+                    model: getModelTier(),
                     instrument: instrument,
                     difficulty: difficulty,
                     genre: genre,
                     primaryFocus: primaryFocus,
                     secondaryFocus: secondaryFocus,
                     time: parseInt(time),
-                    focus: focus
+                    focus: focus,
+                    profile: profile,
+                    goals: goals,
+                    skills: skills,
+                    likedSteps: likedSteps,
+                    customInstructions: customInstructions,
+                    includeMindset: includeMindset,
+                    includePolyrhythm: includePolyrhythm,
+                    pacing: pacing,
+                    deepPractice: deepPracticeMode
                 })
             });
 
-            if (!response.ok) throw new Error("Network response was not ok");
-
             const data = await response.json();
-            const text = data.content?.map(b => b.text || '').join('').trim();
-            const clean = text.replace(/```json|```/g, '').trim();
-            const session = JSON.parse(clean);
+            if (!response.ok || !data.ok) throw new Error(data.error || 'Something went wrong generating your session.');
+            const session = data.result;
 
             renderSession(session, instrument, primaryFocus, secondaryFocus, timeLabel);
 
         } catch (err) {
             console.error(err);
-            errorMsg.textContent = "Something went wrong generating your session. Please try again.";
+            errorMsg.textContent = err.message || "Something went wrong generating your session. Please try again.";
             errorMsg.classList.add('active');
         } finally {
             loading.classList.remove('active');
@@ -1722,6 +2753,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "adjust",
+                    model: getModelTier(),
                     direction: direction,
                     instrument: instrument,
                     primaryFocus: primaryFocus,
@@ -1731,12 +2763,9 @@
                 })
             });
 
-            if (!response.ok) throw new Error("Adjustment request failed");
-
             const data = await response.json();
-            const text = data.content?.map(b => b.text || '').join('').trim();
-            const clean = text.replace(/```json|```/g, '').trim();
-            const newStep = JSON.parse(clean);
+            if (!response.ok || !data.ok) throw new Error(data.error || "Adjustment request failed");
+            const newStep = data.result;
 
             currentSession.steps[index] = newStep;
 
@@ -1779,6 +2808,7 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "swap",
+                    model: getModelTier(),
                     instrument: instrument,
                     primaryFocus: primaryFocus,
                     secondaryFocus: secondaryFocus,
@@ -1788,12 +2818,9 @@
                 })
             });
 
-            if (!response.ok) throw new Error("Swap request failed");
-
             const data = await response.json();
-            const text = data.content?.map(b => b.text || '').join('').trim();
-            const clean = text.replace(/```json|```/g, '').trim();
-            const newStep = JSON.parse(clean);
+            if (!response.ok || !data.ok) throw new Error(data.error || "Swap request failed");
+            const newStep = data.result;
 
             currentSession.steps[index] = newStep;
 
@@ -1930,7 +2957,7 @@
         askBtn.className = 'ask-btn';
         askBtn.title = 'Ask a question about this step';
         askBtn.innerHTML = '? Ask';
-        askBtn.onclick = (e) => openAskPopover(e, step, i);
+        askBtn.onclick = (e) => openAskPanel(e, step, i);
         footer.appendChild(askBtn);
 
         const btnGroup = document.createElement('div');
@@ -1985,7 +3012,8 @@
                 meta: currentSession.meta || '',
                 steps: updatedSteps,
                 totalTime: timerSessionElapsed > 0 ? formatTime(timerSessionElapsed) : '—',
-                completed: true
+                completed: true,
+                primaryFocus: currentPrimaryFocus || ''
             };
 
             const existing = JSON.parse(localStorage.getItem('practiceLog') || '[]');
@@ -1995,7 +3023,7 @@
 
             const toast = document.getElementById('logToast');
             if (toast) { toast.classList.add('visible'); setTimeout(() => toast.classList.remove('visible'), 2500); }
-            if (document.getElementById('inlineLogSection')?.classList.contains('open')) renderInlineLog();
+            renderInlineLog();
             const countEl2 = document.getElementById('logSectionCount');
             try { const e2 = JSON.parse(localStorage.getItem('practiceLog')||'[]'); if(countEl2) countEl2.textContent = `${e2.length} session${e2.length!==1?'s':''}`; } catch(e){}
             if (!isAuto) {
@@ -2005,53 +3033,187 @@
         } catch(e) { console.error('Log error:', e); }
     }
 
-    // ── Inline Practice Log ───────────────────────────────────────────────
-    function toggleInlineLog() {
-        const section = document.getElementById('inlineLogSection');
-        section.classList.toggle('open');
-        if (section.classList.contains('open')) renderInlineLog();
+    // ── Practice Log — Calendar ──────────────────────────────────────────────
+    let calendarViewYear, calendarViewMonth; // month is 0-indexed
+    let calendarSelectedDateKey = null;
+
+    function calDateKey(d) {
+        return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
     }
 
-    function renderInlineLog() {
-        const body = document.getElementById('inlineLogBody');
-        const countEl = document.getElementById('logSectionCount');
+    function getLogEntriesByDay() {
         let entries = [];
-        try { entries = JSON.parse(localStorage.getItem('practiceLog') || '[]'); } catch(e) {}
+        try { entries = JSON.parse(localStorage.getItem('practiceLog') || '[]'); } catch (e) {}
+        const byDay = {};
+        entries.forEach(entry => {
+            const key = calDateKey(new Date(entry.date));
+            if (!byDay[key]) byDay[key] = [];
+            byDay[key].push(entry);
+        });
+        return byDay;
+    }
 
-        countEl.textContent = entries.length ? `${entries.length} session${entries.length !== 1 ? 's' : ''}` : '';
+    function calendarGoToday() {
+        const today = new Date();
+        calendarViewYear = today.getFullYear();
+        calendarViewMonth = today.getMonth();
+        calendarSelectedDateKey = calDateKey(today);
+        renderCalendar();
+    }
+
+    function calendarPrevMonth() {
+        calendarViewMonth--;
+        if (calendarViewMonth < 0) { calendarViewMonth = 11; calendarViewYear--; }
+        renderCalendar();
+    }
+
+    function calendarNextMonth() {
+        calendarViewMonth++;
+        if (calendarViewMonth > 11) { calendarViewMonth = 0; calendarViewYear++; }
+        renderCalendar();
+    }
+
+    function calendarSelectDay(key) {
+        calendarSelectedDateKey = key;
+        document.querySelectorAll('.cal-day.selected').forEach(el => el.classList.remove('selected'));
+        const el = document.querySelector(`.cal-day[data-key="${key}"]`);
+        if (el) el.classList.add('selected');
+        renderCalendarDayDetail();
+    }
+
+    function renderCalendar() {
+        if (calendarViewYear === undefined) {
+            const today = new Date();
+            calendarViewYear = today.getFullYear();
+            calendarViewMonth = today.getMonth();
+            calendarSelectedDateKey = calDateKey(today);
+        }
+        const grid = document.getElementById('calendarGrid');
+        const monthLabelEl = document.getElementById('calendarMonthLabel');
+        if (!grid || !monthLabelEl) return; // Practice Log page isn't in the DOM (shouldn't happen, but safe)
+
+        const byDay = getLogEntriesByDay();
+        const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+        monthLabelEl.textContent = `${monthNames[calendarViewMonth]} ${calendarViewYear}`;
+
+        const firstOfMonth = new Date(calendarViewYear, calendarViewMonth, 1);
+        const startWeekday = firstOfMonth.getDay();
+        const daysInMonth = new Date(calendarViewYear, calendarViewMonth + 1, 0).getDate();
+        const todayKey = calDateKey(new Date());
+
+        let html = '';
+        for (let i = 0; i < startWeekday; i++) html += '<span class="cal-day empty"></span>';
+        for (let day = 1; day <= daysInMonth; day++) {
+            const key = calDateKey(new Date(calendarViewYear, calendarViewMonth, day));
+            const count = (byDay[key] || []).length;
+            const classes = ['cal-day'];
+            if (key === todayKey) classes.push('today');
+            if (key === calendarSelectedDateKey) classes.push('selected');
+            html += `<span class="${classes.join(' ')}" data-key="${key}" onclick="calendarSelectDay('${key}')">
+                <span class="cal-day-num">${day}</span>
+                ${count ? '<span class="cal-day-dot"></span>' : ''}
+            </span>`;
+        }
+        grid.innerHTML = html;
+        renderCalendarDayDetail();
+    }
+
+    function renderCalendarDayDetail() {
+        const label = document.getElementById('calendarDayDetailLabel');
+        const body = document.getElementById('calendarDayDetailBody');
+        if (!label || !body || !calendarSelectedDateKey) return;
+
+        const byDay = getLogEntriesByDay();
+        const entries = (byDay[calendarSelectedDateKey] || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+
+        const [y, m, d] = calendarSelectedDateKey.split('-').map(Number);
+        const dateObj = new Date(y, m - 1, d);
+        const todayKey = calDateKey(new Date());
+        const dateStr = dateObj.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        label.textContent = calendarSelectedDateKey === todayKey ? `Today — ${dateStr}` : dateStr;
 
         if (!entries.length) {
-            body.innerHTML = '<div class="log-empty">No sessions logged yet. Generate and practice a session to get started.</div>';
+            body.innerHTML = '<div class="log-empty">Nothing logged this day.</div>';
             return;
         }
 
-        body.innerHTML = entries.map((entry, i) => {
-            const date = new Date(entry.date);
-            const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            const timeStr = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-            const stepsHtml = (entry.steps || []).map((step, si) =>
-                `<div class="log-step-row" onclick="toggleLogStep(this)" id="logstep-${entry.id}-${si}">
-                    <span class="log-step-name">${step.name}</span>
-                    <span class="log-step-time">${step.actual !== '—' ? step.actual : step.planned}</span>
-                </div>${step.instruction ? `<div class="log-step-instruction">${step.instruction}</div>` : ''}`
-            ).join('');
+        body.innerHTML = entries.map(entry => {
+            const stepsHtml = (entry.steps || []).map((step, si) => {
+                const displayTime = step.actual && step.actual !== '—' ? step.actual : (step.planned || '—');
+                return `<div class="log-step-row" onclick="toggleLogStep(this)" id="logstep-${entry.id}-${si}">
+                    <span class="log-step-name">${escapeHtml(step.name)}</span>
+                    <span class="log-step-time" onclick="editLogStepTime(event, ${entry.id}, ${si})" title="Click to edit">${escapeHtml(displayTime)}</span>
+                </div>${step.instruction ? `<div class="log-step-instruction">${escapeHtml(step.instruction)}</div>` : ''}`;
+            }).join('');
 
-            return `<div class="log-entry" id="log-entry-${i}">
-                <div class="log-entry-header" onclick="toggleLogEntry(${i})">
-                    <span class="log-entry-date">${dateStr} · ${timeStr}</span>
-                    <span class="log-entry-title">${entry.title}</span>
-                    <span class="log-entry-meta">${entry.totalTime !== '—' ? entry.totalTime : ''}</span>
-                    <button class="fav-star ${getFavorites().some(f=>f.id===entry.id)?'starred':''}" onclick="toggleFavFromLog(event, ${entry.id})" title="Favorite">★</button>
+            return `<div class="log-entry open" id="cal-entry-${entry.id}">
+                <div class="log-entry-header" onclick="this.parentElement.classList.toggle('open')">
+                    <span class="log-entry-date">${new Date(entry.date).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}</span>
+                    <span class="log-entry-title">${escapeHtml(entry.title)}</span>
+                    <span class="log-entry-meta">${entry.totalTime !== '—' ? escapeHtml(entry.totalTime) : ''}</span>
+                    <button class="fav-star ${getFavorites().some(f => f.id === entry.id) ? 'starred' : ''}" onclick="toggleFavFromLog(event, ${entry.id})" title="Favorite">★</button>
                     <span class="log-entry-chevron">›</span>
                     <button class="log-entry-delete" onclick="deleteLogEntry(event, ${entry.id})" title="Delete">✕</button>
                 </div>
                 <div class="log-entry-body">${stepsHtml}</div>
             </div>`;
-        }).join('') + '<button class="log-clear-btn" onclick="clearAllLog()">Clear all entries</button>';
+        }).join('');
     }
 
-    function toggleLogEntry(i) {
-        document.getElementById(`log-entry-${i}`)?.classList.toggle('open');
+    // Kept under its old name since several call sites already refresh the log
+    // this way after logging/favoriting/deleting — now it refreshes the calendar.
+    function renderInlineLog() {
+        renderCalendar();
+    }
+
+    function editLogStepTime(e, entryId, stepIndex) {
+        e.stopPropagation();
+        const el = e.currentTarget;
+        if (el.querySelector('input')) return; // already editing
+        const currentVal = el.textContent;
+        el.textContent = '';
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'log-step-time-input';
+        input.value = currentVal;
+        input.onclick = (ev) => ev.stopPropagation();
+        input.onkeydown = (ev) => {
+            if (ev.key === 'Enter') input.blur();
+            if (ev.key === 'Escape') { ev.stopPropagation(); renderInlineLog(); }
+        };
+        input.onblur = () => saveLogStepTime(entryId, stepIndex, input.value);
+        el.appendChild(input);
+        input.focus();
+        input.select();
+    }
+
+    function saveLogStepTime(entryId, stepIndex, newValue) {
+        const trimmed = (newValue || '').trim();
+        const match = trimmed.match(/^(\d{1,3}):([0-5]?\d)$/);
+        if (!match) { renderInlineLog(); return; } // invalid format — just discard the edit
+        const formatted = `${parseInt(match[1], 10)}:${match[2].padStart(2, '0')}`;
+        try {
+            const entries = JSON.parse(localStorage.getItem('practiceLog') || '[]');
+            const entry = entries.find(en => en.id === entryId);
+            if (entry && entry.steps && entry.steps[stepIndex]) {
+                entry.steps[stepIndex].actual = formatted;
+                entry.totalTime = sumStepTimes(entry.steps);
+                localStorage.setItem('practiceLog', JSON.stringify(entries));
+            }
+        } catch (e) {}
+        renderInlineLog();
+    }
+
+    function sumStepTimes(steps) {
+        let total = 0, anyParsed = false;
+        (steps || []).forEach(s => {
+            const t = s.actual && s.actual !== '—' ? s.actual : null;
+            if (t) {
+                const m = t.match(/^(\d+):([0-5]?\d)$/);
+                if (m) { total += parseInt(m[1], 10) * 60 + parseInt(m[2], 10); anyParsed = true; }
+            }
+        });
+        return anyParsed ? formatTime(total) : '—';
     }
 
     function toggleLogStep(el) {
@@ -2102,10 +3264,19 @@
             favs.splice(idx, 1);
         } else {
             favs.unshift({...entry, favoritedAt: new Date().toISOString()});
+            // Favoriting is also a clear "more like this" signal — feed it the same
+            // way a starred-during-the-timer step would be, capped to a couple of
+            // steps per entry so one favorite doesn't dominate the calibration list.
+            (entry.steps || []).slice(0, 2).forEach(s => recordLikedStep({
+                tool: s.name,
+                instruction: s.instruction,
+                instrument: entry.instrument,
+                genre: entry.genre
+            }));
         }
         saveFavorites(favs);
         updateFavSection();
-        if (document.getElementById('inlineLogSection')?.classList.contains('open')) renderInlineLog();
+        renderInlineLog();
     }
 
     function toggleFavSection() {
@@ -2116,9 +3287,7 @@
 
     function updateFavSection() {
         const favs = getFavorites();
-        const section = document.getElementById('favSection');
         const countEl = document.getElementById('favSectionCount');
-        if (section) section.style.display = favs.length ? '' : 'none';
         if (countEl) countEl.textContent = favs.length ? `${favs.length}` : '';
         if (document.getElementById('favSection')?.classList.contains('open')) renderFavSection();
     }
@@ -2199,7 +3368,7 @@
         });
     }
 
-    // ── Tools Sidebar ──────────────────────────────────────────────────────
+    // ── Practice Tools ────────────────────────────────────────────────────
     let activeSidebarTool = null;
 
     function openSidebarTool(toolId, url, btn) {
@@ -2207,44 +3376,326 @@
         if (activeSidebarTool === toolId) {
             closeToolPanel();
             activeSidebarTool = null;
-            document.querySelectorAll('.tool-trigger-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tool-card, .tool-quick-btn').forEach(b => b.classList.remove('active'));
             return;
         }
         activeSidebarTool = toolId;
-        document.querySelectorAll('.tool-trigger-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.querySelectorAll('.tool-card, .tool-quick-btn').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        closeAskPanel();
 
         const panel = document.getElementById('toolPanel');
         const frame = document.getElementById('toolPanelFrame');
         const titleEl = document.getElementById('toolPanelTitle');
 
-        const names = { 'chord-drone': 'Chord Drone', 'chord-looper': 'Chord Looper', 'metronome': 'Metronome' };
+        const names = { 'chord-drone': 'Chord Drone', 'chord-looper': 'Chord Looper', 'metronome': 'Metronome', 'polyrhythm': 'Polyrhythm Trainer', 'scale-explorer': 'Scale Explorer' };
         titleEl.textContent = names[toolId] || toolId;
         frame.src = url;
         panel.classList.add('open');
 
-        const mainCol = document.querySelector('.main-col');
+        // Target the currently active view's main-col, not just the first one in the document —
+        // the tool panel can now be opened from the Practice Tools page as well as the generator.
+        const mainCol = document.querySelector(`#view-${currentView} .main-col`) || document.querySelector('.main-col');
         if (window.innerWidth > 900) mainCol.style.maxWidth = '620px';
+    }
+
+    // Opens a tool as its own full-screen page (Practice Tools grid only —
+    // the quick-access bar on the main page still uses the lighter-weight
+    // floating panel via openSidebarTool above).
+    function openToolFullPage(toolId, url) {
+        const names = { 'chord-drone': 'Chord Drone', 'chord-looper': 'Chord Looper', 'metronome': 'Metronome', 'polyrhythm': 'Polyrhythm Trainer', 'scale-explorer': 'Scale Explorer' };
+        document.getElementById('toolFullTitle').textContent = names[toolId] || toolId;
+        document.getElementById('toolFullFrame').src = url;
+        showView('toolFull');
     }
 
     // ── View switching ─────────────────────────────────────────────────────
     function showView(view) {
         const main = document.getElementById('view-main');
         const profile = document.getElementById('view-profile');
+        const settings = document.getElementById('view-settings');
+        const skills = document.getElementById('view-skills');
+        const tools = document.getElementById('view-tools');
+        const toolFull = document.getElementById('view-tool-full');
+        const ideas = document.getElementById('view-ideas');
+        const log = document.getElementById('view-log');
+        main.style.display = 'none';
+        profile.style.display = 'none';
+        settings.style.display = 'none';
+        skills.style.display = 'none';
+        tools.style.display = 'none';
+        toolFull.style.display = 'none';
+        ideas.style.display = 'none';
+        log.style.display = 'none';
+        // Leaving the full-screen tool page — stop its iframe (audio, timers)
+        // rather than let it keep running unseen in the background.
+        if (currentView === 'toolFull' && view !== 'toolFull') {
+            document.getElementById('toolFullFrame').src = '';
+        }
+        currentView = view || 'main';
         if (view === 'profile') {
-            main.style.display = 'none';
             profile.style.display = 'flex';
             loadProfileUI();
+        } else if (view === 'settings') {
+            settings.style.display = 'flex';
+            loadSettingsUI();
+        } else if (view === 'skills') {
+            skills.style.display = 'flex';
             renderGoals();
             renderSkills();
-            window.scrollTo(0, 0);
+            loadWeeklyGoalsUI();
+        } else if (view === 'tools') {
+            tools.style.display = 'flex';
+        } else if (view === 'toolFull') {
+            toolFull.style.display = 'flex';
+        } else if (view === 'ideas') {
+            ideas.style.display = 'flex';
+            ideaRenderList();
+        } else if (view === 'log') {
+            log.style.display = 'flex';
+            renderInlineLog();
+            renderFavSection();
+            renderWeeklyProgress();
         } else {
             main.style.display = 'flex';
-            profile.style.display = 'none';
         }
+        window.scrollTo(0, 0);
     }
 
     // ── Profile ─────────────────────────────────────────────────────────────
+    // ── Settings ─────────────────────────────────────────────────────────────
+    function loadSettingsUI() {
+        const s = JSON.parse(localStorage.getItem('practiceLabSettings') || '{}');
+        if (s.instrument) document.getElementById('defaultInstrument').value = s.instrument;
+        if (s.genre) document.getElementById('defaultGenre').value = s.genre;
+        if (s.difficulty) document.getElementById('defaultDifficulty').value = s.difficulty;
+        if (s.time) document.getElementById('defaultTime').value = s.time;
+        const toggle = document.getElementById('useProfileToggle');
+        if (toggle) toggle.checked = s.useProfile !== false;
+        const mindsetToggle = document.getElementById('includeMindsetToggle');
+        if (mindsetToggle) mindsetToggle.checked = s.includeMindset === true;
+        const polyrhythmToggle = document.getElementById('includePolyrhythmToggle');
+        if (polyrhythmToggle) polyrhythmToggle.checked = s.includePolyrhythm === true;
+        const pacingEl = document.getElementById('pacingSlider');
+        if (pacingEl) { pacingEl.value = s.pacing || 3; pacingEl.dispatchEvent(new Event('input')); }
+        const coach = document.getElementById('customInstructions');
+        if (coach) {
+            try { coach.value = localStorage.getItem('customInstructions') || ''; } catch(e) {}
+        }
+    }
+
+    function saveSettings() {
+        const useProfileEl = document.getElementById('useProfileToggle');
+        const includeMindsetEl = document.getElementById('includeMindsetToggle');
+        const includePolyrhythmEl = document.getElementById('includePolyrhythmToggle');
+        const pacingEl = document.getElementById('pacingSlider');
+        const s = {
+            instrument: document.getElementById('defaultInstrument').value,
+            genre: document.getElementById('defaultGenre').value,
+            difficulty: document.getElementById('defaultDifficulty').value,
+            time: document.getElementById('defaultTime').value,
+            useProfile: useProfileEl ? useProfileEl.checked : true,
+            includeMindset: includeMindsetEl ? includeMindsetEl.checked : false,
+            includePolyrhythm: includePolyrhythmEl ? includePolyrhythmEl.checked : false,
+            pacing: pacingEl ? parseInt(pacingEl.value) : 3
+        };
+        localStorage.setItem('practiceLabSettings', JSON.stringify(s));
+        // Apply defaults to main form
+        if (s.instrument) document.getElementById('instrumentSelect').value = s.instrument;
+        if (s.genre) document.getElementById('genreSelect').value = s.genre;
+        if (s.difficulty) document.getElementById('difficultySlider').value = s.difficulty;
+        if (s.time) document.getElementById('timeSelect').value = s.time;
+        const btn = document.querySelector('#view-settings .generate-btn');
+        if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => { btn.textContent = 'Save Defaults'; }, 2000); }
+    }
+
+    // Everything the app persists — profile, goals, skills, custom coach
+    // instructions, settings, liked steps, favorites, weekly goals, and the
+    // practice log — all live in this browser's localStorage only. Export
+    // bundles it all into one file so it isn't trapped in whichever browser
+    // happens to have it; Import restores it anywhere.
+    const BACKUP_KEYS = ['practiceLabProfile', 'practiceLabGoals', 'practiceLabSkills', 'customInstructions', 'practiceLabSettings', 'practiceLabLikedSteps', 'practiceLabFavorites', 'practiceLabWeeklyGoals', 'practiceLog', 'practiceLogDraft', 'practiceLabDeepMode'];
+
+    function exportBackup() {
+        const data = {};
+        BACKUP_KEYS.forEach(k => {
+            const v = localStorage.getItem(k);
+            if (v !== null) data[k] = v;
+        });
+        const blob = new Blob([JSON.stringify({ app: 'practice-lab-backup', version: 1, exportedAt: new Date().toISOString(), data }, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `practice-lab-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+        const status = document.getElementById('backupStatus');
+        if (status) status.textContent = 'Backup downloaded ✓';
+    }
+
+    function importBackup(file) {
+        const status = document.getElementById('backupStatus');
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            let parsed;
+            try {
+                parsed = JSON.parse(reader.result);
+            } catch (e) {
+                if (status) status.textContent = "That file isn't valid JSON — nothing was changed.";
+                return;
+            }
+            // Tolerate either the wrapped export format or a bare {key: value} object.
+            const data = (parsed && parsed.data && typeof parsed.data === 'object') ? parsed.data : parsed;
+            const restoredKeys = BACKUP_KEYS.filter(k => typeof data?.[k] === 'string');
+            if (!restoredKeys.length) {
+                if (status) status.textContent = "That doesn't look like a Practice Lab backup — nothing was changed.";
+                return;
+            }
+            if (!confirm(`Restore ${restoredKeys.length} saved item(s) from this backup? This overwrites your current profile, goals, skills, and log in this browser.`)) return;
+            restoredKeys.forEach(k => localStorage.setItem(k, data[k]));
+            if (status) status.textContent = 'Backup restored — reloading...';
+            setTimeout(() => location.reload(), 600);
+        };
+        reader.onerror = () => { if (status) status.textContent = 'Could not read that file.'; };
+        reader.readAsText(file);
+    }
+
+    // Apply settings defaults on page load
+    (function applySettingsDefaults() {
+        try {
+            const s = JSON.parse(localStorage.getItem('practiceLabSettings') || '{}');
+            if (s.instrument) { const el = document.getElementById('instrumentSelect'); if(el) el.value = s.instrument; }
+            if (s.genre) { const el = document.getElementById('genreSelect'); if(el) el.value = s.genre; }
+            if (s.difficulty) { const el = document.getElementById('difficultySlider'); if(el) { el.value = s.difficulty; el.dispatchEvent(new Event('input')); } }
+            if (s.time) { const el = document.getElementById('timeSelect'); if(el) el.value = s.time; }
+            const modelSelect = document.getElementById('modelTierSelect');
+            if (modelSelect) modelSelect.value = localStorage.getItem('practiceLabModelTier') || 'fable';
+        } catch(e) {}
+    })();
+
+    // Testing-only model switch (Sonnet/Opus/Fable) — read fresh by every fetch
+    // call below so it takes effect immediately, no reload needed.
+    function getModelTier() {
+        try { return localStorage.getItem('practiceLabModelTier') || 'fable'; } catch (e) { return 'fable'; }
+    }
+    function saveModelTier() {
+        const el = document.getElementById('modelTierSelect');
+        if (el) localStorage.setItem('practiceLabModelTier', el.value);
+    }
+
+    // Skills/Goals AI generation had no skill-level signal at all — the worker
+    // had nothing to calibrate against, so it defaulted toward safe, generic,
+    // often too-easy suggestions. Pull whatever's actually known from Profile
+    // (years playing, playing context, weaknesses) and Settings (default
+    // difficulty), so the AI can aim at the player's real level instead.
+    function getSkillLevelSignals() {
+        const years = document.getElementById('profileYears')?.value || '';
+        const context = document.getElementById('profileContext')?.value || '';
+        const weaknesses = document.getElementById('profileWeaknesses')?.value || '';
+        let difficulty = '';
+        try {
+            const settings = JSON.parse(localStorage.getItem('practiceLabSettings') || '{}');
+            const difficultyLabels = { '1': 'Foundational', '2': 'Developing', '3': 'Fluent', '4': 'Advanced', '5': 'Expert' };
+            difficulty = difficultyLabels[settings.difficulty] || '';
+        } catch (e) {}
+        return { years, context, weaknesses, difficulty };
+    }
+
+    // Daily quote — perseverance, practice, patience, gradual progress. Rotates once
+    // per day (not on every reload) so it reads as intentional rather than random.
+    const DAILY_QUOTES = [
+        { text: "A journey of a thousand miles begins with a single step.", attr: "Lao Tzu" },
+        { text: "Fall seven times, stand up eight.", attr: "Japanese Proverb" },
+        { text: "Genius is one percent inspiration, ninety-nine percent perspiration.", attr: "Thomas Edison" },
+        { text: "It always seems impossible until it's done.", attr: "Nelson Mandela" },
+        { text: "Practice is the best of all instructors.", attr: "Publilius Syrus" },
+        { text: "Great things are done by a series of small things brought together.", attr: "Vincent van Gogh" },
+        { text: "Success is the sum of small efforts, repeated day in and day out.", attr: "Robert Collier" },
+        { text: "Patience, persistence and perspiration make an unbeatable combination for success.", attr: "Napoleon Hill" },
+        { text: "Slow and steady wins the race.", attr: "Aesop" },
+        { text: "Water dripping day by day wears the hardest rock away.", attr: "Chinese Proverb" },
+        { text: "He who is not courageous enough to take risks will accomplish nothing in life.", attr: "Muhammad Ali" },
+        { text: "You don't have to be great to start, but you have to start to be great.", attr: "Zig Ziglar" },
+        { text: "There are no shortcuts to any place worth going.", attr: "Beverly Sills" },
+        { text: "The man who moves a mountain begins by carrying away small stones.", attr: "Confucius" },
+        { text: "Little by little, a little becomes a lot.", attr: "Tanzanian Proverb" },
+    ];
+    (function renderDailyQuote() {
+        const el = document.getElementById('dailyQuote');
+        if (!el) return;
+        const now = new Date();
+        const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+        const q = DAILY_QUOTES[dayOfYear % DAILY_QUOTES.length];
+
+        el.innerHTML = '';
+        const quoteSpan = document.createElement('span');
+        quoteSpan.textContent = `\u201c${q.text}\u201d`;
+        const attrSpan = document.createElement('span');
+        attrSpan.className = 'daily-quote-attr';
+        attrSpan.textContent = ` \u2014 ${q.attr}`;
+        el.appendChild(quoteSpan);
+        el.appendChild(attrSpan);
+    })();
+
+    // ── Deep Practice mode ───────────────────────────────────────────────────
+    function updateTimeOptions() {
+        const sel = document.getElementById('timeSelect');
+        if (!sel) return;
+        const currentVal = sel.value;
+        const standardOptions = [
+            {v:'15', l:'15 min'}, {v:'30', l:'30 min'}, {v:'45', l:'45 min'},
+            {v:'60', l:'60 min'}, {v:'90', l:'90 min'}, {v:'120', l:'2 hours'}, {v:'180', l:'3 hours'}
+        ];
+        const deepOptions = [
+            {v:'120', l:'2 hours'}, {v:'180', l:'3 hours'}, {v:'240', l:'4 hours'},
+            {v:'300', l:'5 hours'}, {v:'360', l:'6 hours'}, {v:'420', l:'7 hours'}, {v:'480', l:'8 hours'}
+        ];
+        const options = deepPracticeMode ? deepOptions : standardOptions;
+        const defaultVal = deepPracticeMode ? '240' : '60';
+        const stillValid = options.some(o => o.v === currentVal);
+        const useVal = stillValid ? currentVal : defaultVal;
+        sel.innerHTML = options.map(o => `<option value="${o.v}"${o.v === useVal ? ' selected' : ''}>${o.l}</option>`).join('');
+    }
+
+    function applyDeepPracticeVisuals() {
+        document.body.classList.toggle('deep-practice-mode', deepPracticeMode);
+        const switchInput = document.getElementById('deepPracticeToggle');
+        const tagline = document.querySelector('.header .tagline');
+        if (switchInput) switchInput.checked = deepPracticeMode;
+        if (tagline) tagline.textContent = deepPracticeMode ? 'sustained, generalized sessions for long practice days' : 'an intelligent practice companion for musicians';
+        updateTimeOptions();
+        // Primary/Secondary Focus stay visible in Deep Practice mode now —
+        // "General" already covers "let the AI spread across categories" for
+        // any session, so Deep Practice no longer needs to force that itself.
+
+        // Entering Deep Practice: surface the specific parameters rather than
+        // leaving them tucked away — worth a look before a longer session.
+        // Leaving the mode doesn't force it back shut, in case you opened it yourself.
+        if (deepPracticeMode) {
+            const advToggle = document.getElementById('advancedToggle');
+            const advOptions = document.getElementById('advancedOptions');
+            if (advToggle && advOptions && !advToggle.classList.contains('open')) {
+                advToggle.classList.add('open');
+                advOptions.classList.add('open');
+            }
+        }
+    }
+
+    function toggleDeepPracticeMode() {
+        const switchInput = document.getElementById('deepPracticeToggle');
+        deepPracticeMode = switchInput ? switchInput.checked : !deepPracticeMode;
+        try { localStorage.setItem('practiceLabDeepMode', deepPracticeMode ? 'true' : 'false'); } catch (e) {}
+        applyDeepPracticeVisuals();
+    }
+
+    (function restoreDeepPracticeMode() {
+        try { deepPracticeMode = localStorage.getItem('practiceLabDeepMode') === 'true'; } catch (e) {}
+        applyDeepPracticeVisuals();
+    })();
+
     function loadProfileUI() {
         const p = JSON.parse(localStorage.getItem('practiceLabProfile') || '{}');
         if (p.instrument) document.getElementById('profileInstrument').value = p.instrument;
@@ -2253,6 +3704,8 @@
         if (p.context) document.getElementById('profileContext').value = p.context;
         if (p.weaknesses) document.getElementById('profileWeaknesses').value = p.weaknesses;
         if (p.influences) document.getElementById('profileInfluences').value = p.influences;
+        // If profile already saved, show read view
+        if (p.updatedAt) showProfileRead(p);
     }
 
     function saveProfile() {
@@ -2266,8 +3719,138 @@
             updatedAt: new Date().toISOString()
         };
         localStorage.setItem('practiceLabProfile', JSON.stringify(p));
-        const toast = document.getElementById('logToast');
-        if (toast) { toast.textContent = 'Profile saved ✓'; toast.classList.add('visible'); setTimeout(() => { toast.classList.remove('visible'); toast.textContent = 'Session saved ✓'; }, 2000); }
+        showProfileRead(p);
+    }
+
+    function showProfileRead(p) {
+        const labels = {
+            instrument: 'Instrument', genre: 'Genre',
+            years: 'Years Playing', context: 'Context'
+        };
+        const content = document.getElementById('profileReadContent');
+        if (!content) return;
+        content.innerHTML = `
+            <div class="profile-field">
+                <span class="profile-field-label">Instrument</span>
+                <span class="profile-field-value">${p.instrument || '—'}</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-label">Genre</span>
+                <span class="profile-field-value">${p.genre || '—'}</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-label">Years Playing</span>
+                <span class="profile-field-value">${p.years || '—'}</span>
+            </div>
+            <div class="profile-field">
+                <span class="profile-field-label">Context</span>
+                <span class="profile-field-value">${p.context || '—'}</span>
+            </div>
+            ${p.weaknesses ? `<div class="profile-field stacked">
+                <span class="profile-field-label">Weaknesses</span>
+                <span class="profile-field-value long">${p.weaknesses}</span>
+            </div>` : ''}
+            ${p.influences ? `<div class="profile-field stacked">
+                <span class="profile-field-label">Influences</span>
+                <span class="profile-field-value long">${p.influences}</span>
+            </div>` : ''}`;
+        document.getElementById('profileReadView').classList.add('visible');
+        document.getElementById('profileEditView').classList.add('hidden');
+    }
+
+    function showProfileEdit() {
+        document.getElementById('profileReadView').classList.remove('visible');
+        document.getElementById('profileEditView').classList.remove('hidden');
+    }
+
+    // ── Weekly Practice Goals ────────────────────────────────────────────────
+    const PRACTICE_CATEGORIES = ['Fundamentals', 'Improvisation', 'Chords & Harmony', 'Rhythm & Time Feel', 'Ear Training', 'Repertoire'];
+
+    function loadWeeklyGoalsUI() {
+        const wrap = document.getElementById('weeklyGoalsInputs');
+        if (!wrap) return;
+        let goals = {};
+        try { goals = JSON.parse(localStorage.getItem('practiceLabWeeklyGoals') || '{}'); } catch (e) {}
+        wrap.innerHTML = PRACTICE_CATEGORIES.map(cat => `
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem;">
+                <label style="font-size:0.85rem; color:var(--ink-light); flex:1;">${escapeHtml(cat)}</label>
+                <input type="number" min="0" step="5" data-category="${escapeHtml(cat)}" class="weekly-goal-input" value="${goals[cat] || ''}" placeholder="0" style="width:70px; padding:0.35rem 0.5rem; border:1px solid var(--border); background:var(--paper); font-family:inherit; font-size:0.82rem;">
+                <span style="font-size:0.72rem;color:var(--ink-muted); width:24px;">min</span>
+            </div>
+        `).join('');
+    }
+
+    function saveWeeklyGoals() {
+        const goals = {};
+        document.querySelectorAll('.weekly-goal-input').forEach(input => {
+            const cat = input.dataset.category;
+            const val = parseInt(input.value, 10);
+            if (val > 0) goals[cat] = val;
+        });
+        localStorage.setItem('practiceLabWeeklyGoals', JSON.stringify(goals));
+        const btn = document.getElementById('saveWeeklyGoalsBtn');
+        if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => { btn.textContent = 'Save Weekly Goals'; }, 2000); }
+    }
+
+    function getWeekRange(date) {
+        const d = new Date(date);
+        d.setHours(0, 0, 0, 0);
+        const day = d.getDay(); // 0 = Sunday
+        const start = new Date(d);
+        start.setDate(d.getDate() - day);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 7);
+        return [start, end];
+    }
+
+    function parseLogMinutes(timeStr) {
+        if (!timeStr || timeStr === '—') return 0;
+        const m = timeStr.match(/^(\d+):([0-5]?\d)$/);
+        if (!m) return 0;
+        return parseInt(m[1], 10) + parseInt(m[2], 10) / 60;
+    }
+
+    function renderWeeklyProgress() {
+        const body = document.getElementById('weeklyProgressBody');
+        if (!body) return;
+
+        let goals = {};
+        try { goals = JSON.parse(localStorage.getItem('practiceLabWeeklyGoals') || '{}'); } catch (e) {}
+        const categories = Object.keys(goals).filter(c => goals[c] > 0);
+
+        if (!categories.length) {
+            body.innerHTML = '<div class="log-empty">Set weekly goals on the Skills &amp; Goals page to track progress here.</div>';
+            return;
+        }
+
+        let entries = [];
+        try { entries = JSON.parse(localStorage.getItem('practiceLog') || '[]'); } catch (e) {}
+        const [weekStart, weekEnd] = getWeekRange(new Date());
+
+        const minutesByCategory = {};
+        entries.forEach(entry => {
+            const d = new Date(entry.date);
+            if (d >= weekStart && d < weekEnd && entry.primaryFocus) {
+                minutesByCategory[entry.primaryFocus] = (minutesByCategory[entry.primaryFocus] || 0) + parseLogMinutes(entry.totalTime);
+            }
+        });
+
+        body.innerHTML = categories.map(cat => {
+            const done = Math.round(minutesByCategory[cat] || 0);
+            const target = goals[cat];
+            const pct = Math.min(100, Math.round((done / target) * 100));
+            return `
+                <div class="weekly-goal-row">
+                    <div class="weekly-goal-row-top">
+                        <span class="weekly-goal-cat">${escapeHtml(cat)}</span>
+                        <span class="weekly-goal-nums">${done}m / ${target}m</span>
+                    </div>
+                    <div class="weekly-goal-bar-track">
+                        <div class="weekly-goal-bar-fill ${done >= target ? 'met' : ''}" style="width:${pct}%"></div>
+                    </div>
+                </div>
+            `;
+        }).join('');
     }
 
     // ── Goals ────────────────────────────────────────────────────────────────
@@ -2280,9 +3863,9 @@
             return;
         }
         el.innerHTML = goals.map((g, i) => `
-            <div style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.45rem 0;border-bottom:1px solid var(--paper-dark);">
+            <div style="display:flex;align-items:flex-start;gap:0.6rem;padding:0.65rem 0.8rem;margin-bottom:0.75rem;border:1px solid var(--paper-dark);background:var(--paper);">
                 <span style="font-size:0.85rem;line-height:1.5;flex:1;color:var(--ink-light);">${g}</span>
-                <button onclick="deleteGoal(${i})" style="background:none;border:none;color:var(--border);font-size:0.65rem;cursor:pointer;margin-top:2px;transition:color 0.15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--border)'">✕</button>
+                <button onclick="deleteGoal(${i})" style="background:none;border:none;color:var(--border);font-size:0.65rem;cursor:pointer;margin-top:2px;transition:color 0.15s;flex-shrink:0;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--border)'">✕</button>
             </div>`).join('');
     }
 
@@ -2317,14 +3900,15 @@
             <div style="margin-bottom:1rem;border:1px solid var(--paper-dark);">
                 <div style="display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0.9rem;background:var(--paper-dark);border-bottom:1px solid var(--border);">
                     <span style="font-family:'Cormorant Garamond',serif;font-size:0.78rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--ink-muted);flex:1;">${cat.name}</span>
-                    <button onclick="deleteSkillCategory(${ci})" style="background:none;border:none;color:transparent;font-size:0.6rem;cursor:pointer;transition:color 0.15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='transparent'">✕</button>
+                    <button class="suggest-trigger-btn" onclick="openSuggestPopover(event, ${ci}, '${cat.name.replace(/'/g, '')}')">+ Suggest</button>
+                    <button onclick="deleteSkillCategory(${ci})" style="background:none;border:none;color:var(--border);font-size:0.65rem;cursor:pointer;transition:color 0.15s;margin-left:0.25rem;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--border)'">✕</button>
                 </div>
                 <div style="padding:0.4rem 0.9rem;">
                     ${cat.items.map((item, ii) => `
                     <div style="display:flex;align-items:center;gap:0.6rem;padding:0.3rem 0;border-bottom:1px solid rgba(200,184,154,0.25);">
                         <button onclick="cycleSkillStatus(${ci},${ii})" style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);background:var(--paper);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;transition:all 0.15s;${item.status==='working'?'border-color:var(--amber);background:rgba(200,132,26,0.15);':item.status==='mastered'?'border-color:var(--green);background:var(--green);color:white;':''}">${statusIcon(item.status)}</button>
                         <span style="font-size:0.82rem;color:var(--ink-light);flex:1;${item.status==='mastered'?'text-decoration:line-through;color:var(--ink-muted);':''}">${item.name}</span>
-                        <button onclick="deleteSkillItem(${ci},${ii})" style="background:none;border:none;color:transparent;font-size:0.6rem;cursor:pointer;transition:color 0.15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='transparent'">✕</button>
+                        <button onclick="deleteSkillItem(${ci},${ii})" style="background:none;border:none;color:var(--border);font-size:0.65rem;cursor:pointer;transition:color 0.15s;" onmouseover="this.style.color='var(--red)'" onmouseout="this.style.color='var(--border)'">✕</button>
                     </div>`).join('')}
                 </div>
                 <div style="display:flex;gap:0.4rem;padding:0.4rem 0.9rem 0.6rem;border-top:1px solid rgba(200,184,154,0.25);">
@@ -2381,32 +3965,158 @@
         renderSkills();
     }
 
-    async function seedSkills() {
-        const btn = document.getElementById('seedBtn');
+    // ── Skill Suggestions ────────────────────────────────────────────────────
+    let suggestCategoryIndex = null;
+
+    async function openSuggestPopover(e, ci, categoryName) {
+        console.log('openSuggestPopover called:', ci, categoryName);
+        e.stopPropagation();
+        suggestCategoryIndex = ci;
+        const popover = document.getElementById('suggestPopover');
+        const body = document.getElementById('suggestPopoverBody');
+        const title = document.getElementById('suggestPopoverTitle');
+
+        title.textContent = `Suggestions — ${categoryName}`;
+        body.innerHTML = '<div class="suggest-loading">Generating suggestions...</div>';
+
+        // Position near the button with viewport bounds checking
+        const rect = e.target.getBoundingClientRect();
+        popover.style.position = 'fixed';
+        const popW = 280;
+        const popH = 320;
+        let left = rect.left;
+        let top = rect.bottom + 8;
+        // Keep within right edge
+        if (left + popW > window.innerWidth - 16) left = window.innerWidth - popW - 16;
+        // Keep within left edge
+        if (left < 8) left = 8;
+        // Flip above if too close to bottom
+        if (top + popH > window.innerHeight - 16) top = Math.max(8, rect.top - popH - 8);
+        popover.style.left = left + 'px';
+        popover.style.top = top + 'px';
+        popover.classList.add('visible');
+
+        // Get existing items to avoid duplicates
+        const skills = JSON.parse(localStorage.getItem('practiceLabSkills') || '[]');
+        const existingItems = (skills[ci]?.items || []).map(i => i.name.toLowerCase());
+
+        // Fetch suggestions from AI
         const instrument = document.getElementById('profileInstrument')?.value || 'guitar';
         const genre = document.getElementById('profileGenre')?.value || 'Jazz';
-        if (btn) { btn.disabled = true; btn.textContent = '✦ Generating...'; }
+        const skillLevel = getSkillLevelSignals();
+
+        try {
+            console.log('Fetching suggestions for:', categoryName, instrument, genre);
+            const res = await fetch('https://practice-lab-proxy.gregdallasmusic.workers.dev', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'suggestSkills', model: getModelTier(), instrument, genre, categoryName, ...skillLevel })
+            });
+            console.log('Response status:', res.status);
+            const data = await res.json();
+            console.log('Response data:', data);
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Suggestion request failed');
+            const suggestions = data.result;
+            const filtered = suggestions.filter(s => typeof s === 'string' && !existingItems.includes(s.toLowerCase()));
+
+            if (!filtered.length) {
+                body.innerHTML = '<div class="suggest-loading">No new suggestions — you\'ve covered this category well!</div>';
+                return;
+            }
+
+            body.innerHTML = filtered.map((s, i) => `
+                <div class="suggest-item">
+                    <input type="checkbox" id="suggest-${i}" value="${s.replace(/"/g, '&quot;')}">
+                    <label for="suggest-${i}" class="suggest-item-text" style="cursor:pointer;">${s}</label>
+                </div>`).join('');
+        } catch(e) {
+            body.innerHTML = '<div class="suggest-loading">Something went wrong — try again.</div>';
+            console.error(e);
+        }
+    }
+
+    function closeSuggestPopover() {
+        document.getElementById('suggestPopover').classList.remove('visible');
+        suggestCategoryIndex = null;
+    }
+
+    function addSuggestedItems() {
+        if (suggestCategoryIndex === null) return;
+        const checkboxes = document.querySelectorAll('#suggestPopoverBody input[type="checkbox"]:checked');
+        if (!checkboxes.length) { closeSuggestPopover(); return; }
+        const skills = JSON.parse(localStorage.getItem('practiceLabSkills') || '[]');
+        checkboxes.forEach(cb => {
+            skills[suggestCategoryIndex].items.push({ name: cb.value, status: '' });
+        });
+        localStorage.setItem('practiceLabSkills', JSON.stringify(skills));
+        renderSkills();
+        closeSuggestPopover();
+    }
+
+    // Close popover when clicking outside
+    document.addEventListener('click', (e) => {
+        const popover = document.getElementById('suggestPopover');
+        if (popover && popover.classList.contains('visible') && !popover.contains(e.target) && !e.target.classList.contains('suggest-trigger-btn') && !e.target.closest('.suggest-trigger-btn')) {
+            closeSuggestPopover();
+        }
+    });
+
+    async function seedGoals() {
+        const btn = document.getElementById('seedGoalsBtn');
+        const instrument = document.getElementById('profileInstrument')?.value || 'guitar';
+        const genre = document.getElementById('profileGenre')?.value || 'Jazz';
+        const skillLevel = getSkillLevelSignals();
+        if (btn) { btn.disabled = true; btn.textContent = '◆ Generating...'; }
         try {
             const res = await fetch('https://practice-lab-proxy.gregdallasmusic.workers.dev', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action: 'seedSkills', instrument, genre })
+                body: JSON.stringify({ action: 'seedGoals', model: getModelTier(), instrument, genre, ...skillLevel })
             });
             const data = await res.json();
-            const text = data.content?.map(b => b.text || '').join('').trim();
-            const clean = text.replace(/```json|```/g, '').trim();
-            const categories = JSON.parse(clean);
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Goal generation failed');
+            const goals = data.result;
+            const existing = JSON.parse(localStorage.getItem('practiceLabGoals') || '[]');
+            const newGoals = goals.filter(g => typeof g === 'string' && !existing.includes(g));
+            localStorage.setItem('practiceLabGoals', JSON.stringify([...existing, ...newGoals]));
+            renderGoals();
+        } catch(e) {
+            console.error('seedGoals error:', e);
+            alert('Error: ' + e.message);
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '◆ Generate goals with AI'; }
+        }
+    }
+
+    async function seedSkills() {
+        const btn = document.getElementById('seedBtn');
+        const instrument = document.getElementById('profileInstrument')?.value || 'guitar';
+        const genre = document.getElementById('profileGenre')?.value || 'Jazz';
+        const skillLevel = getSkillLevelSignals();
+        if (btn) { btn.disabled = true; btn.textContent = '◆ Generating...'; }
+        try {
+            const res = await fetch('https://practice-lab-proxy.gregdallasmusic.workers.dev', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'seedSkills', model: getModelTier(), instrument, genre, ...skillLevel })
+            });
+            const data = await res.json();
+            if (!res.ok || !data.ok) throw new Error(data.error || 'Skill generation failed');
+            // Worker already normalizes name/category and item shape server-side.
+            const normalized = data.result;
             const existing = JSON.parse(localStorage.getItem('practiceLabSkills') || '[]');
-            const existingNames = existing.map(c => c.name.toLowerCase());
-            const newCats = categories.filter(c => !existingNames.includes(c.name.toLowerCase()));
-            localStorage.setItem('practiceLabSkills', JSON.stringify([...existing, ...newCats]));
+            const existingNames = existing.map(c => (c.name || '').toLowerCase());
+            const newCats = normalized.filter(c => c.name && !existingNames.includes(c.name.toLowerCase()));
+            const merged = [...existing, ...newCats];
+            localStorage.setItem('practiceLabSkills', JSON.stringify(merged));
             renderSkills();
             const toast = document.getElementById('logToast');
             if (toast) { toast.textContent = `Added ${newCats.length} skill categories ✓`; toast.classList.add('visible'); setTimeout(() => { toast.classList.remove('visible'); toast.textContent = 'Session saved ✓'; }, 2500); }
         } catch(e) {
-            console.error(e);
+            console.error('seedSkills error:', e);
+            alert('Error: ' + e.message);
         } finally {
-            if (btn) { btn.disabled = false; btn.textContent = '✦ Generate skill categories with AI'; }
+            if (btn) { btn.disabled = false; btn.textContent = '◆ Generate skill categories with AI'; }
         }
     }
 
@@ -2416,6 +4126,27 @@
     diffSlider.addEventListener('input', () => {
         diffLabel.textContent = diffLabels[parseInt(diffSlider.value)];
     });
+
+    const pacingSlider = document.getElementById('pacingSlider');
+    const pacingLabel = document.getElementById('pacingLabel');
+    const pacingLabels = {1: 'Deep Focus', 2: 'Focused', 3: 'Balanced', 4: 'Varied', 5: 'Highly Varied'};
+    if (pacingSlider) {
+        pacingSlider.addEventListener('input', () => {
+            pacingLabel.textContent = pacingLabels[parseInt(pacingSlider.value)];
+        });
+    }
+
+    // "General" has no secondary focus to pick — a session spanning categories
+    // doesn't have a single secondary emphasis either.
+    const primarySelect = document.getElementById('primarySelect');
+    const secondaryFocusRow = document.getElementById('secondaryFocusRow');
+    function updateSecondaryFocusVisibility() {
+        if (secondaryFocusRow) secondaryFocusRow.style.display = primarySelect.value === 'General' ? 'none' : '';
+    }
+    if (primarySelect) {
+        primarySelect.addEventListener('change', updateSecondaryFocusVisibility);
+        updateSecondaryFocusVisibility();
+    }
 
     let activeStepEl = null;
 
@@ -2435,6 +4166,7 @@
 
         activeStepEl = stepEl;
         if (stepEl) stepEl.classList.add('module-active');
+        closeAskPanel();
 
         titleEl.textContent = title || 'Tool';
         frame.src = url;
@@ -2461,61 +4193,78 @@
         }
     }
 
-    // ── Ask popover ───────────────────────────────────────────────────────
+    // ── Ask panel (multi-turn, per-step conversation) ──────────────────────
+    let askThreads = {};       // stepIndex -> [{role, content}, ...]
     let currentAskStep = null;
     let currentAskIndex = null;
 
-    function openAskPopover(e, step, index) {
+    function openAskPanel(e, step, index) {
         currentAskStep = step;
         currentAskIndex = index;
-        const popover = document.getElementById('askPopover');
-        const input = document.getElementById('askInput');
-        const response = document.getElementById('askResponse');
 
-        // Reset
-        input.value = '';
-        response.classList.remove('visible');
-        response.textContent = '';
-        document.getElementById('askSubmitBtn').disabled = false;
+        // Ask and the tool panel share the right-hand slot — only one open at a time
+        closeToolPanel();
 
-        // Position fixed relative to viewport
-        const rect = e.target.getBoundingClientRect();
-        const popoverWidth = 300;
-        let left = rect.right + 12;
-        let top = rect.top - 10;
+        document.querySelectorAll('.ask-btn').forEach(b => b.classList.remove('active'));
+        if (e && e.currentTarget) e.currentTarget.classList.add('active');
 
-        // If it would go off the right edge, flip to left
-        if (left + popoverWidth > window.innerWidth - 20) {
-            left = rect.left - popoverWidth - 12;
-        }
+        document.getElementById('askPanelSubtitle').textContent = step.tool || '';
+        renderAskMessages();
 
-        // Keep within vertical bounds
-        if (top + 200 > window.innerHeight) {
-            top = window.innerHeight - 220;
-        }
-        if (top < 10) top = 10;
-
-        popover.style.left = left + 'px';
-        popover.style.top = top + 'px';
-        popover.classList.add('visible');
-        input.focus();
+        document.getElementById('askPanel').classList.add('open');
+        document.getElementById('askInput').focus();
     }
 
-    function closeAskPopover() {
-        document.getElementById('askPopover').classList.remove('visible');
-        currentAskStep = null;
+    function closeAskPanel() {
+        document.getElementById('askPanel').classList.remove('open');
+        document.querySelectorAll('.ask-btn').forEach(b => b.classList.remove('active'));
+    }
+
+    function renderAskMessages() {
+        const wrap = document.getElementById('askMessages');
+        wrap.innerHTML = '';
+        const thread = askThreads[currentAskIndex] || [];
+
+        if (thread.length === 0) {
+            const empty = document.createElement('div');
+            empty.className = 'ask-empty-state';
+            empty.textContent = 'Ask anything about this step — follow-up questions welcome.';
+            wrap.appendChild(empty);
+            return;
+        }
+
+        thread.forEach(m => {
+            const bubble = document.createElement('div');
+            bubble.className = 'ask-msg ' + (m.role === 'user' ? 'ask-msg-user' : 'ask-msg-assistant');
+            bubble.textContent = m.content; // textContent, never innerHTML, for model/user-authored text
+            wrap.appendChild(bubble);
+        });
+        wrap.scrollTop = wrap.scrollHeight;
     }
 
     async function submitAskQuestion() {
         const input = document.getElementById('askInput');
-        const response = document.getElementById('askResponse');
         const submitBtn = document.getElementById('askSubmitBtn');
         const question = input.value.trim();
         if (!question || !currentAskStep) return;
 
+        if (!askThreads[currentAskIndex]) askThreads[currentAskIndex] = [];
+        const thread = askThreads[currentAskIndex];
+        const historyBeforeThisQuestion = thread.slice();
+
+        thread.push({ role: 'user', content: question });
+        input.value = '';
+        input.style.height = 'auto';
+        renderAskMessages();
+
         submitBtn.disabled = true;
-        response.classList.add('visible');
-        response.textContent = 'Thinking...';
+        const wrap = document.getElementById('askMessages');
+        const typing = document.createElement('div');
+        typing.className = 'ask-typing';
+        typing.id = 'askTypingIndicator';
+        typing.textContent = 'Thinking...';
+        wrap.appendChild(typing);
+        wrap.scrollTop = wrap.scrollHeight;
 
         try {
             const res = await fetch("https://practice-lab-proxy.gregdallasmusic.workers.dev", {
@@ -2523,7 +4272,9 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     action: "ask",
+                    model: getModelTier(),
                     question: question,
+                    history: historyBeforeThisQuestion,
                     stepTool: currentAskStep.tool,
                     stepInstruction: currentAskStep.instruction,
                     instrument: currentInstrument,
@@ -2531,21 +4282,20 @@
                 })
             });
             const data = await res.json();
-            const text = data.content?.map(b => b.text || '').join('').trim();
-            response.textContent = text;
+            const text = (res.ok && data.ok) ? data.result : (data.error || 'Something went wrong. Please try again.');
+            thread.push({ role: 'assistant', content: text });
         } catch (err) {
-            response.textContent = 'Something went wrong. Please try again.';
+            thread.push({ role: 'assistant', content: 'Something went wrong. Please try again.' });
         } finally {
             submitBtn.disabled = false;
+            renderAskMessages();
         }
     }
 
-    // Close popover when clicking outside
-    document.addEventListener('click', (e) => {
-        const popover = document.getElementById('askPopover');
-        if (!popover.contains(e.target) && !e.target.classList.contains('ask-btn')) {
-            closeAskPopover();
-        }
+    // Auto-grow the input as the user types, up to the CSS max-height
+    document.getElementById('askInput').addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
     });
 
     // Submit on Enter (Shift+Enter for newline)
@@ -2565,6 +4315,9 @@
     let timerSessionElapsed = 0;  // total session seconds
     let timerStepElapsed = 0;     // seconds spent on current step
     let timerStepLog = [];        // [{name, seconds}] for each completed step
+    let timerCurrentStepStarred = false; // "more like this" signal for the step currently being timed
+    let timerOvertime = false;    // true once a step has run past its planned duration
+    let timerOvertimeSeconds = 0; // extra seconds accrued while in overtime
     let timerElapsedInterval = null;
 
     function parseDuration(durStr) {
@@ -2609,6 +4362,13 @@
             timerFinish();
             return;
         }
+        // Reset the star toggle for the new step
+        timerCurrentStepStarred = false;
+        const starBtn = document.getElementById('timerStarBtn');
+        if (starBtn) { starBtn.classList.remove('starred'); starBtn.textContent = '☆'; }
+        timerOvertime = false;
+        timerOvertimeSeconds = 0;
+
         // Log the previous step's time
         if (index > 0 && currentSession.steps[index - 1]) {
             timerStepLog.push({
@@ -2663,8 +4423,17 @@
 
     function timerTick() {
         if (timerSecondsLeft <= 0) {
-            clearInterval(timerInterval);
-            timerNext();
+            // Never auto-advance — the only way to move to the next step is the
+            // user explicitly choosing to. Once planned time runs out, just keep
+            // counting up so the actual time spent stays accurate.
+            timerOvertime = true;
+            timerOvertimeSeconds++;
+            const countdown = document.getElementById('timerCountdown');
+            countdown.textContent = '+' + formatTime(timerOvertimeSeconds);
+            countdown.classList.remove('warning');
+            countdown.classList.add('overtime');
+            const bar = document.getElementById('timerProgressBar');
+            if (bar) bar.style.width = '100%';
             return;
         }
         const countdown = document.getElementById('timerCountdown');
@@ -2685,10 +4454,55 @@
         timerTotalSeconds += seconds;
     }
 
+    // ── "More like this" calibration ────────────────────────────────────────
+    // Lightweight, capped list of activities the musician has responded well
+    // to. Never replayed verbatim — just surfaced to the generator as a loose
+    // steer ("more stuff like this"), so sessions calibrate gradually rather
+    // than repeating exact past steps.
+    function toggleStepStar() {
+        timerCurrentStepStarred = !timerCurrentStepStarred;
+        const btn = document.getElementById('timerStarBtn');
+        if (btn) {
+            btn.classList.toggle('starred', timerCurrentStepStarred);
+            btn.textContent = timerCurrentStepStarred ? '★' : '☆';
+        }
+    }
+
+    function recordLikedStep({ tool, instruction, instrument, genre, primaryFocus, secondaryFocus }) {
+        if (!tool && !instruction) return;
+        try {
+            const entry = {
+                tool: (tool || 'Practice').slice(0, 100),
+                summary: (instruction || '').slice(0, 160),
+                instrument: instrument || '',
+                genre: genre || '',
+                primaryFocus: primaryFocus || '',
+                secondaryFocus: secondaryFocus || '',
+                date: new Date().toISOString()
+            };
+            let liked = [];
+            try { liked = JSON.parse(localStorage.getItem('practiceLabLikedSteps') || '[]'); } catch(e) {}
+            liked.unshift(entry);
+            if (liked.length > 40) liked.splice(40);
+            localStorage.setItem('practiceLabLikedSteps', JSON.stringify(liked));
+        } catch (e) {}
+    }
+
     function timerComplete() {
         if (currentSession && currentSession.steps[timerCurrentStep]) {
             const step = currentSession.steps[timerCurrentStep];
-            const actualSeconds = Math.max(1, timerStepElapsed + (timerOvertime ? timerOvertimeSeconds : 0));
+            if (timerCurrentStepStarred) recordLikedStep({
+                tool: step.tool,
+                instruction: step.instruction,
+                instrument: currentInstrument,
+                genre: document.getElementById('genreSelect') ? document.getElementById('genreSelect').value : '',
+                primaryFocus: currentPrimaryFocus,
+                secondaryFocus: currentSecondaryFocus
+            });
+            // timerStepElapsed already reflects total real time on this step — it keeps
+            // incrementing every second regardless of the countdown, including any time
+            // spent in overtime — so it alone is the correct total, nothing to add on top.
+            const actualSeconds = Math.max(1, timerStepElapsed);
             const entry = {
                 name: step.tool || 'Practice',
                 seconds: actualSeconds
@@ -2729,7 +4543,8 @@
                 }],
                 totalTime: formatTime(actualSeconds),
                 completed: true,
-                singleStep: true
+                singleStep: true,
+                primaryFocus: currentPrimaryFocus || ''
             };
             let existing = [];
             try { existing = JSON.parse(localStorage.getItem('practiceLog') || '[]'); } catch(e) {}
@@ -2738,13 +4553,29 @@
             localStorage.setItem('practiceLog', JSON.stringify(existing));
             const countEl = document.getElementById('logSectionCount');
             if (countEl) countEl.textContent = `${existing.length} session${existing.length !== 1 ? 's' : ''}`;
-            if (document.getElementById('inlineLogSection')?.classList.contains('open')) renderInlineLog();
+            renderInlineLog();
+
+            // Visible confirmation — this was previously silent, which made it feel
+            // like the Log button wasn't doing anything even though it was.
+            const toast = document.getElementById('logToast');
+            if (toast) {
+                toast.textContent = `Logged: ${step.tool || 'Practice'} ✓`;
+                toast.classList.add('visible');
+                setTimeout(() => { toast.classList.remove('visible'); toast.textContent = 'Session saved ✓'; }, 2500);
+            }
+            const logBtn = document.getElementById('timerCompleteBtn');
+            if (logBtn) {
+                const originalText = logBtn.textContent;
+                logBtn.textContent = 'Logged ✓';
+                setTimeout(() => { logBtn.textContent = originalText; }, 1200);
+            }
         }
-        clearInterval(timerInterval);
-        timerLoadStep(timerCurrentStep + 1);
+        // Deliberately does NOT advance to the next step or stop the timer — logging
+        // and moving on are separate, both user-initiated. The timer keeps running
+        // (including into overtime) until the musician explicitly presses Next.
     }
     function timerSkip() {
-        // Move to next step without logging
+        // Move to next step (does not log — Log is a separate explicit action)
         clearInterval(timerInterval);
         // Don't push to timerStepLog
         timerLoadStep(timerCurrentStep + 1);
@@ -2840,6 +4671,293 @@
             otherInput.style.display = 'none';
         }
     });
+
+    // ══════════════════════════════════════════════════════════════════════
+    // IDEA VAULT — record a short audio idea, name it, group it with similar
+    // ones. Recordings are stored in IndexedDB (not localStorage) since audio
+    // blobs can get sizeable fast and localStorage's ~5-10MB quota is shared
+    // with every other feature in this app — don't want a handful of
+    // recordings to break Profile, Goals, the Journal, everything.
+    // ══════════════════════════════════════════════════════════════════════
+
+    function escapeHtml(str) {
+        return String(str ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    }
+
+    const IDEA_DB_NAME = 'PracticeLabIdeas';
+    const IDEA_DB_VERSION = 1;
+    const IDEA_STORE = 'ideas';
+    const IDEA_MAX_SECONDS = 180;
+
+    function ideaDbOpen() {
+        return new Promise((resolve, reject) => {
+            if (!window.indexedDB) { reject(new Error('IndexedDB not available')); return; }
+            const req = indexedDB.open(IDEA_DB_NAME, IDEA_DB_VERSION);
+            req.onupgradeneeded = () => {
+                const db = req.result;
+                if (!db.objectStoreNames.contains(IDEA_STORE)) {
+                    db.createObjectStore(IDEA_STORE, { keyPath: 'id' });
+                }
+            };
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function ideaDbSave(idea) {
+        const db = await ideaDbOpen();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(IDEA_STORE, 'readwrite');
+            tx.objectStore(IDEA_STORE).put(idea);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    async function ideaDbGetAll() {
+        const db = await ideaDbOpen();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(IDEA_STORE, 'readonly');
+            const req = tx.objectStore(IDEA_STORE).getAll();
+            req.onsuccess = () => resolve(req.result || []);
+            req.onerror = () => reject(req.error);
+        });
+    }
+
+    async function ideaDbDelete(id) {
+        const db = await ideaDbOpen();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(IDEA_STORE, 'readwrite');
+            tx.objectStore(IDEA_STORE).delete(id);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    }
+
+    let ideaMediaRecorder = null;
+    let ideaRecordedChunks = [];
+    let ideaRecordStream = null;
+    let ideaRecordSeconds = 0;
+    let ideaRecordInterval = null;
+    let ideaPendingBlob = null;
+    let ideaPendingDuration = 0;
+    let ideaCachedList = [];
+    let ideaCurrentAudio = null;
+    let ideaCurrentPlayingId = null;
+
+    async function ideaStartRecording() {
+        const errEl = document.getElementById('ideaRecordError');
+        if (errEl) errEl.style.display = 'none';
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            if (errEl) { errEl.textContent = 'Your browser doesn\'t support audio recording.'; errEl.style.display = 'block'; }
+            return;
+        }
+
+        try {
+            ideaRecordStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        } catch (e) {
+            if (errEl) {
+                errEl.textContent = "Couldn't access your microphone. Check your browser's site permissions and try again.";
+                errEl.style.display = 'block';
+            }
+            return;
+        }
+
+        ideaRecordedChunks = [];
+        let mimeType = '';
+        for (const t of ['audio/webm', 'audio/mp4', 'audio/ogg']) {
+            if (window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(t)) { mimeType = t; break; }
+        }
+        try {
+            ideaMediaRecorder = mimeType ? new MediaRecorder(ideaRecordStream, { mimeType }) : new MediaRecorder(ideaRecordStream);
+        } catch (e) {
+            if (errEl) { errEl.textContent = 'Recording is not supported in this browser.'; errEl.style.display = 'block'; }
+            ideaRecordStream.getTracks().forEach(t => t.stop());
+            return;
+        }
+
+        ideaMediaRecorder.ondataavailable = e => { if (e.data && e.data.size > 0) ideaRecordedChunks.push(e.data); };
+        ideaMediaRecorder.onstop = () => {
+            ideaRecordStream.getTracks().forEach(t => t.stop());
+            const blob = new Blob(ideaRecordedChunks, { type: ideaMediaRecorder.mimeType || 'audio/webm' });
+            ideaPendingBlob = blob;
+            ideaPendingDuration = ideaRecordSeconds;
+            const player = document.getElementById('ideaPreviewPlayer');
+            player.src = URL.createObjectURL(blob);
+            document.getElementById('ideaRecorderActive').style.display = 'none';
+            document.getElementById('ideaRecorderPreview').style.display = 'block';
+        };
+
+        ideaMediaRecorder.start();
+        ideaRecordSeconds = 0;
+        document.getElementById('ideaRecordTimer').textContent = '0:00';
+        document.getElementById('ideaRecorderIdle').style.display = 'none';
+        document.getElementById('ideaRecorderActive').style.display = 'block';
+        ideaRecordInterval = setInterval(() => {
+            ideaRecordSeconds++;
+            const timerEl = document.getElementById('ideaRecordTimer');
+            if (timerEl) timerEl.textContent = formatTime(ideaRecordSeconds);
+            if (ideaRecordSeconds >= IDEA_MAX_SECONDS) ideaStopRecording();
+        }, 1000);
+    }
+
+    function ideaStopRecording() {
+        if (ideaRecordInterval) { clearInterval(ideaRecordInterval); ideaRecordInterval = null; }
+        if (ideaMediaRecorder && ideaMediaRecorder.state !== 'inactive') ideaMediaRecorder.stop();
+    }
+
+    function ideaDiscard() {
+        ideaPendingBlob = null;
+        ideaPendingDuration = 0;
+        const player = document.getElementById('ideaPreviewPlayer');
+        if (player && player.src) { URL.revokeObjectURL(player.src); player.src = ''; }
+        const nameInput = document.getElementById('ideaNameInput');
+        const catInput = document.getElementById('ideaCategoryInput');
+        if (nameInput) nameInput.value = '';
+        if (catInput) catInput.value = '';
+        document.getElementById('ideaRecorderPreview').style.display = 'none';
+        document.getElementById('ideaRecorderIdle').style.display = 'block';
+    }
+
+    async function ideaSave() {
+        if (!ideaPendingBlob) return;
+        const nameInput = document.getElementById('ideaNameInput');
+        const catInput = document.getElementById('ideaCategoryInput');
+        const name = (nameInput.value || '').trim() || 'Untitled idea';
+        const category = (catInput.value || '').trim() || 'Uncategorized';
+        const idea = {
+            id: Date.now(),
+            name,
+            category,
+            blob: ideaPendingBlob,
+            mimeType: ideaPendingBlob.type,
+            duration: ideaPendingDuration,
+            createdAt: new Date().toISOString()
+        };
+        const saveBtn = document.querySelector('#ideaRecorderPreview .generate-btn');
+        if (saveBtn) { saveBtn.disabled = true; saveBtn.textContent = 'Saving...'; }
+        try {
+            await ideaDbSave(idea);
+        } catch (e) {
+            alert('Could not save this idea — your browser storage may be full or unavailable.');
+            if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Idea'; }
+            return;
+        }
+        if (saveBtn) { saveBtn.disabled = false; saveBtn.textContent = 'Save Idea'; }
+        ideaDiscard();
+        ideaRenderList();
+    }
+
+    async function ideaRenderList() {
+        const wrap = document.getElementById('ideaListWrap');
+        if (!wrap) return;
+        let ideas;
+        try {
+            ideas = await ideaDbGetAll();
+        } catch (e) {
+            wrap.innerHTML = '<div class="log-empty">Could not load your ideas — IndexedDB may be unavailable in this browser or context (e.g. private browsing).</div>';
+            return;
+        }
+        ideaCachedList = ideas;
+
+        // Populate the category autocomplete list
+        const categories = [...new Set(ideas.map(i => i.category).filter(Boolean))].sort();
+        const datalist = document.getElementById('ideaCategoryList');
+        if (datalist) datalist.innerHTML = categories.map(c => `<option value="${escapeHtml(c)}"></option>`).join('');
+
+        const filterVal = (document.getElementById('ideaFilterInput')?.value || '').toLowerCase().trim();
+        let filtered = ideas;
+        if (filterVal) {
+            filtered = ideas.filter(i =>
+                (i.name || '').toLowerCase().includes(filterVal) ||
+                (i.category || '').toLowerCase().includes(filterVal)
+            );
+        }
+
+        if (!filtered.length) {
+            wrap.innerHTML = `<div class="log-empty">${ideas.length ? 'No ideas match that filter.' : 'No ideas saved yet — record your first one above.'}</div>`;
+            return;
+        }
+
+        const groups = {};
+        filtered.forEach(i => {
+            const cat = i.category || 'Uncategorized';
+            if (!groups[cat]) groups[cat] = [];
+            groups[cat].push(i);
+        });
+        const sortedCats = Object.keys(groups).sort((a, b) => {
+            if (a === 'Uncategorized') return 1;
+            if (b === 'Uncategorized') return -1;
+            return a.localeCompare(b);
+        });
+
+        wrap.innerHTML = sortedCats.map(cat => {
+            const items = groups[cat].sort((a, b) => (b.createdAt || '').localeCompare(a.createdAt || ''));
+            return `
+                <div class="log-section open" style="margin-bottom:0.75rem;">
+                    <div class="log-section-header" onclick="this.parentElement.classList.toggle('open')">
+                        <span class="log-section-icon"></span>
+                        <span class="log-section-title">${escapeHtml(cat)} <span style="font-style:italic;color:var(--ink-muted);font-size:0.72rem;">(${items.length})</span></span>
+                        <span class="log-section-chevron">›</span>
+                    </div>
+                    <div class="log-section-body" style="padding:0.75rem;">
+                        ${items.map(i => `
+                            <div class="idea-card">
+                                <button class="idea-card-play" onclick="ideaTogglePlay(${i.id})" id="ideaPlayBtn-${i.id}">▶</button>
+                                <div class="idea-card-info">
+                                    <div class="idea-card-name">${escapeHtml(i.name)}</div>
+                                    <div class="idea-card-meta">${formatTime(i.duration || 0)} · ${new Date(i.createdAt).toLocaleDateString()}</div>
+                                </div>
+                                <button class="idea-card-delete" onclick="ideaDelete(${i.id})" title="Delete">✕</button>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function ideaTogglePlay(id) {
+        if (ideaCurrentPlayingId === id && ideaCurrentAudio) {
+            ideaCurrentAudio.pause();
+            ideaCurrentAudio = null;
+            ideaCurrentPlayingId = null;
+            const btn = document.getElementById('ideaPlayBtn-' + id);
+            if (btn) btn.textContent = '▶';
+            return;
+        }
+        if (ideaCurrentAudio) {
+            ideaCurrentAudio.pause();
+            const prevBtn = document.getElementById('ideaPlayBtn-' + ideaCurrentPlayingId);
+            if (prevBtn) prevBtn.textContent = '▶';
+        }
+        const idea = ideaCachedList.find(i => i.id === id);
+        if (!idea) return;
+        const url = URL.createObjectURL(idea.blob);
+        const audio = new Audio(url);
+        ideaCurrentAudio = audio;
+        ideaCurrentPlayingId = id;
+        const btn = document.getElementById('ideaPlayBtn-' + id);
+        if (btn) btn.textContent = '⏸';
+        audio.onended = () => {
+            if (btn) btn.textContent = '▶';
+            URL.revokeObjectURL(url);
+            if (ideaCurrentPlayingId === id) { ideaCurrentAudio = null; ideaCurrentPlayingId = null; }
+        };
+        audio.play();
+    }
+
+    async function ideaDelete(id) {
+        if (!confirm("Delete this idea? This can't be undone.")) return;
+        if (ideaCurrentPlayingId === id && ideaCurrentAudio) {
+            ideaCurrentAudio.pause();
+            ideaCurrentAudio = null;
+            ideaCurrentPlayingId = null;
+        }
+        try { await ideaDbDelete(id); } catch (e) {}
+        ideaRenderList();
+    }
 </script>
 </body>
 </html>
