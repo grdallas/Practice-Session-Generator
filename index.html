@@ -390,6 +390,7 @@
             transition: opacity 0.15s;
         }
         .tool-step.has-module:hover::after { opacity: 1; }
+        .tool-step.has-module.opens-external::after { content: '↗'; }
         .tool-step.module-active { background: rgba(200, 132, 26, 0.06); }
 
         @keyframes moduleGlow {
@@ -2943,13 +2944,21 @@
         const footer = document.createElement('div');
         footer.className = 'step-footer';
 
-        // Make whole card clickable if step has a url
+        // Make whole card clickable if step has a url. Backing tracks are a real
+        // YouTube search, not one of our own embeddable tools — those open in a
+        // new tab instead of the floating tool panel.
         if (step.url) {
+            const isBackingTrack = step.url.startsWith('https://www.youtube.com/results?');
             el.classList.add('has-module');
+            if (isBackingTrack) el.classList.add('opens-external');
             el.addEventListener('click', (e) => {
                 // Don't trigger if clicking a button
                 if (e.target.closest('button')) return;
-                openToolPanel(step.url, step.tool, el);
+                if (isBackingTrack) {
+                    window.open(step.url, '_blank', 'noopener,noreferrer');
+                } else {
+                    openToolPanel(step.url, step.tool, el);
+                }
             });
         }
 
