@@ -2244,7 +2244,6 @@
         <div class="form-section">
             <div class="form-section-label">AI Model — Testing Only</div>
             <select id="modelTierSelect" onchange="saveModelTier()">
-                <option value="fable">Fable (most capable, most expensive)</option>
                 <option value="opus">Opus (strong, moderate cost)</option>
                 <option value="sonnet">Sonnet (fastest, cheapest)</option>
             </select>
@@ -3582,14 +3581,20 @@
             if (s.difficulty) { const el = document.getElementById('difficultySlider'); if(el) { el.value = s.difficulty; el.dispatchEvent(new Event('input')); } }
             if (s.time) { const el = document.getElementById('timeSelect'); if(el) el.value = s.time; }
             const modelSelect = document.getElementById('modelTierSelect');
-            if (modelSelect) modelSelect.value = localStorage.getItem('practiceLabModelTier') || 'fable';
+            if (modelSelect) modelSelect.value = getModelTier();
         } catch(e) {}
     })();
 
-    // Testing-only model switch (Sonnet/Opus/Fable) — read fresh by every fetch
-    // call below so it takes effect immediately, no reload needed.
+    // Testing-only model switch (Sonnet/Opus) — read fresh by every fetch
+    // call below so it takes effect immediately, no reload needed. Fable was
+    // removed as an option (too expensive to run for anyone beyond just
+    // testing) — a stale 'fable' value from localStorage on an existing
+    // visitor falls back to Opus rather than showing a blank dropdown.
     function getModelTier() {
-        try { return localStorage.getItem('practiceLabModelTier') || 'fable'; } catch (e) { return 'fable'; }
+        try {
+            const stored = localStorage.getItem('practiceLabModelTier');
+            return (stored === 'opus' || stored === 'sonnet') ? stored : 'opus';
+        } catch (e) { return 'opus'; }
     }
     function saveModelTier() {
         const el = document.getElementById('modelTierSelect');
