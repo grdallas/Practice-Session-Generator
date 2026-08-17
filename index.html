@@ -278,6 +278,32 @@
             letter-spacing: 0.02em;
         }
 
+        .difficulty-btn-group {
+            display: flex;
+            gap: 0.6rem;
+            margin-top: 0.25rem;
+        }
+        .difficulty-btn {
+            flex: 1;
+            font-family: 'Libre Baskerville', serif;
+            font-size: 0.82rem;
+            letter-spacing: 0.02em;
+            color: var(--ink-light);
+            background: var(--paper);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 0.65rem 0.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.15s;
+        }
+        .difficulty-btn:hover { border-color: var(--ink); }
+        .difficulty-btn.active {
+            background: var(--ink);
+            border-color: var(--ink);
+            color: var(--paper);
+        }
+
         input[type="range"] {
             flex: 1;
             -webkit-appearance: none;
@@ -1788,6 +1814,30 @@
                 box-shadow: 0 -4px 32px rgba(0,0,0,0.15);
             }
         }
+
+        /* Embedded mode: opened from a session step, rendered inside that step's own
+           card instead of floating elsewhere on the page — the tool felt disconnected
+           from the exercise it belonged to. Three classes beats the fixed-overlay rules
+           above (incl. the mobile one) regardless of source order. */
+        .tool-panel.open.embedded {
+            position: static;
+            top: auto;
+            right: auto;
+            bottom: auto;
+            left: auto;
+            width: 100%;
+            max-height: none;
+            margin-top: 1.25rem;
+            border: 1px solid var(--border);
+            box-shadow: none;
+            z-index: auto;
+        }
+        .tool-panel.embedded iframe {
+            min-height: 480px;
+        }
+        .step-footer .open-tool-btn {
+            margin-right: auto;
+        }
     </style>
 </head>
 <body>
@@ -1888,40 +1938,30 @@
             </div>
 
             <div class="form-row">
-                <label for="difficultySlider">Difficulty — <span id="difficultyLabel">Fluent</span></label>
-                <div class="slider-wrap">
-                    <span class="slider-edge-label">Foundational</span>
-                    <input type="range" id="difficultySlider" min="1" max="5" value="3" step="1">
-                    <span class="slider-edge-label">Expert</span>
+                <label>Difficulty</label>
+                <!-- Three buttons over the internal 5-level scale (Foundational..Expert) —
+                     the AI prompt still gets full-fidelity guidance per level (see worker.js
+                     VALID_DIFFICULTIES); this just simplifies what the user picks from.
+                     Developing/Advanced stay reachable via Settings > Default Difficulty. -->
+                <div class="difficulty-btn-group" id="difficultyBtnGroup">
+                    <button type="button" class="difficulty-btn" data-value="1">Just Starting</button>
+                    <button type="button" class="difficulty-btn" data-value="3">Building</button>
+                    <button type="button" class="difficulty-btn" data-value="5">Expert</button>
                 </div>
+                <input type="hidden" id="difficultySlider" value="3">
             </div>
 
-            <div id="focusFieldsWrapper">
-                <div class="form-row">
-                    <label for="primarySelect">Primary Focus</label>
-                    <select id="primarySelect">
-                        <option value="Fundamentals" selected>Fundamentals</option>
-                        <option value="Improvisation">Improvisation</option>
-                        <option value="Chords & Harmony">Chords &amp; Harmony</option>
-                        <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
-                        <option value="Ear Training">Ear Training</option>
-                        <option value="Repertoire">Repertoire</option>
-                        <option value="General">General</option>
-                    </select>
-                </div>
-
-                <div class="form-row" id="secondaryFocusRow">
-                    <label for="secondarySelect">Secondary Focus <span style="font-style:italic; text-transform:none; font-weight:normal;">(optional)</span></label>
-                    <select id="secondarySelect">
-                        <option value="" selected>None</option>
-                        <option value="Fundamentals">Fundamentals</option>
-                        <option value="Improvisation">Improvisation</option>
-                        <option value="Chords & Harmony">Chords &amp; Harmony</option>
-                        <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
-                        <option value="Ear Training">Ear Training</option>
-                        <option value="Repertoire">Repertoire</option>
-                    </select>
-                </div>
+            <div class="form-row">
+                <label for="primarySelect">Primary Focus</label>
+                <select id="primarySelect">
+                    <option value="Fundamentals" selected>Fundamentals</option>
+                    <option value="Improvisation">Improvisation</option>
+                    <option value="Chords & Harmony">Chords &amp; Harmony</option>
+                    <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
+                    <option value="Ear Training">Ear Training</option>
+                    <option value="Repertoire">Repertoire</option>
+                    <option value="General">General</option>
+                </select>
             </div>
 
             <div class="form-row">
@@ -2012,13 +2052,18 @@
 </div><!-- .page-wrap -->
 
 <!-- Tool panel (Chord Drone / Chord Looper / Metronome): lives outside all view containers
-     so it can be opened from the Practice Tools page as well as the generator and session steps -->
+     so it can be opened from the Practice Tools page as well as the generator and session steps.
+     #toolPanelHome is its parking spot when idle or opened from the sidebar/Tools grid; when a
+     session step opens it, openToolPanel() moves the node into that step's own card instead
+     (see .tool-panel.embedded), then closeToolPanel() moves it back here. -->
+<div id="toolPanelHome">
 <div class="tool-panel" id="toolPanel">
     <div class="tool-panel-header">
         <span class="tool-panel-title" id="toolPanelTitle">Chord Drone</span>
         <button class="tool-panel-close" onclick="closeToolPanel()" title="Close">✕</button>
     </div>
     <iframe id="toolPanelFrame" src="" title="Practice Tool"></iframe>
+</div>
 </div>
 
 <!-- Ask panel: a persistent chat about the step you're on, supports follow-up questions.
@@ -2594,7 +2639,6 @@
     let currentSession = null;
     let currentInstrument = '';
     let currentPrimaryFocus = 'Fundamentals';
-    let currentSecondaryFocus = '';
     let currentTime = '30';
     let currentView = 'main';
     let deepPracticeMode = false;
@@ -2616,7 +2660,6 @@
         // for both regular and Deep Practice sessions alike; Deep Practice no
         // longer forces this itself, since focus selection works the same either way.
         const primaryFocus = primarySelectVal === 'General' ? '' : primarySelectVal;
-        const secondaryFocus = primarySelectVal === 'General' ? '' : document.getElementById('secondarySelect').value;
         const time = document.getElementById('timeSelect').value;
         const focus = document.getElementById('focus').value.trim();
         const btn = document.getElementById('generateBtn');
@@ -2667,7 +2710,6 @@
                     difficulty: difficulty,
                     genre: genre,
                     primaryFocus: primaryFocus,
-                    secondaryFocus: secondaryFocus,
                     time: parseInt(time),
                     focus: focus,
                     profile: profile,
@@ -2686,7 +2728,7 @@
             if (!response.ok || !data.ok) throw new Error(data.error || 'Something went wrong generating your session.');
             const session = data.result;
 
-            renderSession(session, instrument, primaryFocus, secondaryFocus, timeLabel);
+            renderSession(session, instrument, primaryFocus, timeLabel);
 
         } catch (err) {
             console.error(err);
@@ -2701,7 +2743,6 @@
     async function adjustDifficulty(index, direction, btn) {
         const instrument = currentInstrument;
         const primaryFocus = currentPrimaryFocus;
-        const secondaryFocus = currentSecondaryFocus;
         const focus = document.getElementById('focus').value.trim();
         const currentStep = currentSession.steps[index];
 
@@ -2720,7 +2761,6 @@
                     direction: direction,
                     instrument: instrument,
                     primaryFocus: primaryFocus,
-                    secondaryFocus: secondaryFocus,
                     focus: focus,
                     currentStep: currentStep
                 })
@@ -2735,6 +2775,9 @@
             if (stepEl) {
                 const container = stepEl.parentElement;
                 const nextSibling = stepEl.nextSibling;
+                // Close the embedded tool panel first if it's living inside this
+                // card — stepEl.remove() would otherwise orphan the shared node.
+                if (activeStepEl === stepEl) closeToolPanel();
                 stepEl.remove();
                 const tempContainer = document.createElement('div');
                 renderStep(newStep, index, tempContainer);
@@ -2755,7 +2798,6 @@
     async function swapStep(index, btn) {
         const instrument = currentInstrument;
         const primaryFocus = currentPrimaryFocus;
-        const secondaryFocus = currentSecondaryFocus;
         const focus = document.getElementById('focus').value.trim();
         const currentStep = currentSession.steps[index];
         const otherSteps = currentSession.steps
@@ -2774,7 +2816,6 @@
                     model: getModelTier(),
                     instrument: instrument,
                     primaryFocus: primaryFocus,
-                    secondaryFocus: secondaryFocus,
                     focus: focus,
                     currentStep: currentStep,
                     otherSteps: otherSteps
@@ -2791,6 +2832,9 @@
             if (stepEl) {
                 const container = stepEl.parentElement;
                 const nextSibling = stepEl.nextSibling;
+                // Close the embedded tool panel first if it's living inside this
+                // card — stepEl.remove() would otherwise orphan the shared node.
+                if (activeStepEl === stepEl) closeToolPanel();
                 stepEl.remove();
                 const tempContainer = document.createElement('div');
                 renderStep(newStep, index, tempContainer);
@@ -2809,7 +2853,7 @@
         }
     }
 
-    function renderSession(session, instrument, primaryFocus, secondaryFocus, time) {
+    function renderSession(session, instrument, primaryFocus, time) {
         timerStop(); // reset timer on new session
         currentSession = session;
         document.getElementById('sessionStartRow').style.display = '';
@@ -2817,7 +2861,6 @@
         const favBtn = document.getElementById('favSessionBtn'); if(favBtn) { favBtn.style.display = ''; favBtn.classList.remove('starred'); favBtn.textContent = '★ Favorite'; }
         currentInstrument = instrument;
         currentPrimaryFocus = primaryFocus;
-        currentSecondaryFocus = secondaryFocus;
 
         // Auto-save every generated session immediately
         try {
@@ -2845,6 +2888,11 @@
 
         document.getElementById('sessionTitle').textContent = session.title;
         document.getElementById('sessionMeta').textContent = (session.meta || '') + ` — ${time}`;
+
+        // The embedded tool panel may currently be parented inside a step card
+        // that's about to be wiped — close it first so the shared node doesn't
+        // get discarded along with the old cards.
+        closeToolPanel();
 
         const stepsEl = document.getElementById('toolSteps');
         stepsEl.innerHTML = '';
@@ -2921,6 +2969,20 @@
                     openToolPanel(step.url, step.tool, el);
                 }
             });
+
+            // Explicit, labeled toggle — the pulsing ⊕ icon + whole-card-click alone
+            // weren't a discoverable enough affordance for opening the step's tool.
+            if (!isBackingTrack) {
+                const toolBtn = document.createElement('button');
+                toolBtn.className = 'open-tool-btn';
+                toolBtn.type = 'button';
+                toolBtn.textContent = '⊕ Open Tool';
+                toolBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    openToolPanel(step.url, step.tool, el);
+                };
+                footer.appendChild(toolBtn);
+            }
         }
 
         // Ask button
@@ -3410,6 +3472,12 @@
         if (currentView === 'toolFull' && view !== 'toolFull') {
             document.getElementById('toolFullFrame').src = '';
         }
+        // The embedded tool panel only makes sense inside its originating step
+        // card — leaving the session view should return it to its neutral home
+        // rather than sit (invisibly) inside a now-hidden step.
+        if (activeStepEl && view !== 'main') {
+            closeToolPanel();
+        }
         currentView = view || 'main';
         if (view === 'profile') {
             profile.style.display = 'flex';
@@ -3482,7 +3550,7 @@
         // Apply defaults to main form
         if (s.instrument) document.getElementById('instrumentSelect').value = s.instrument;
         if (s.genre) document.getElementById('genreSelect').value = s.genre;
-        if (s.difficulty) document.getElementById('difficultySlider').value = s.difficulty;
+        if (s.difficulty) setDifficultyButton(s.difficulty);
         if (s.time) document.getElementById('timeSelect').value = s.time;
         const btn = document.querySelector('#view-settings .generate-btn');
         if (btn) { btn.textContent = 'Saved ✓'; setTimeout(() => { btn.textContent = 'Save Defaults'; }, 2000); }
@@ -3548,7 +3616,7 @@
             const s = JSON.parse(localStorage.getItem('practiceLabSettings') || '{}');
             if (s.instrument) { const el = document.getElementById('instrumentSelect'); if(el) el.value = s.instrument; }
             if (s.genre) { const el = document.getElementById('genreSelect'); if(el) el.value = s.genre; }
-            if (s.difficulty) { const el = document.getElementById('difficultySlider'); if(el) { el.value = s.difficulty; el.dispatchEvent(new Event('input')); } }
+            if (s.difficulty) setDifficultyButton(s.difficulty);
             if (s.time) { const el = document.getElementById('timeSelect'); if(el) el.value = s.time; }
             const modelSelect = document.getElementById('modelTierSelect');
             if (modelSelect) modelSelect.value = getModelTier();
@@ -3652,9 +3720,9 @@
         if (switchInput) switchInput.checked = deepPracticeMode;
         if (tagline) tagline.textContent = deepPracticeMode ? 'sustained, generalized sessions for long practice days' : 'an intelligent practice companion for musicians';
         updateTimeOptions();
-        // Primary/Secondary Focus stay visible in Deep Practice mode now —
-        // "General" already covers "let the AI spread across categories" for
-        // any session, so Deep Practice no longer needs to force that itself.
+        // Primary Focus stays visible in Deep Practice mode now — "General"
+        // already covers "let the AI spread across categories" for any
+        // session, so Deep Practice no longer needs to force that itself.
     }
 
     function toggleDeepPracticeMode() {
@@ -4093,12 +4161,26 @@
         }
     }
 
-    const diffSlider = document.getElementById('difficultySlider');
-    const diffLabel = document.getElementById('difficultyLabel');
-    const diffLabels = {1: 'Foundational', 2: 'Developing', 3: 'Fluent', 4: 'Advanced', 5: 'Expert'};
-    diffSlider.addEventListener('input', () => {
-        diffLabel.textContent = diffLabels[parseInt(diffSlider.value)];
+    // Three buttons over the internal 5-level scale — see the form-row comment
+    // above. Values other than 1/3/5 (loaded from an old saved default) snap to
+    // the nearest button, rounding up on the two exact ties.
+    function nearestDifficultyBucket(value) {
+        const v = parseInt(value);
+        if (v <= 1) return 1;
+        if (v <= 3) return 3;
+        return 5;
+    }
+    function setDifficultyButton(value) {
+        const bucket = nearestDifficultyBucket(value);
+        document.getElementById('difficultySlider').value = bucket;
+        document.querySelectorAll('.difficulty-btn').forEach(b => {
+            b.classList.toggle('active', parseInt(b.dataset.value) === bucket);
+        });
+    }
+    document.querySelectorAll('.difficulty-btn').forEach(b => {
+        b.addEventListener('click', () => setDifficultyButton(b.dataset.value));
     });
+    setDifficultyButton(document.getElementById('difficultySlider').value);
 
     const pacingSlider = document.getElementById('pacingSlider');
     const pacingLabel = document.getElementById('pacingLabel');
@@ -4109,18 +4191,6 @@
         });
     }
 
-    // "General" has no secondary focus to pick — a session spanning categories
-    // doesn't have a single secondary emphasis either.
-    const primarySelect = document.getElementById('primarySelect');
-    const secondaryFocusRow = document.getElementById('secondaryFocusRow');
-    function updateSecondaryFocusVisibility() {
-        if (secondaryFocusRow) secondaryFocusRow.style.display = primarySelect.value === 'General' ? 'none' : '';
-    }
-    if (primarySelect) {
-        primarySelect.addEventListener('change', updateSecondaryFocusVisibility);
-        updateSecondaryFocusVisibility();
-    }
-
     let activeStepEl = null;
 
     function openToolPanel(url, title, stepEl) {
@@ -4129,7 +4199,11 @@
         const titleEl = document.getElementById('toolPanelTitle');
 
         // Remove active state from previous step
-        if (activeStepEl) activeStepEl.classList.remove('module-active');
+        if (activeStepEl) {
+            activeStepEl.classList.remove('module-active');
+            const prevBtn = activeStepEl.querySelector('.open-tool-btn');
+            if (prevBtn) prevBtn.textContent = '⊕ Open Tool';
+        }
 
         // If clicking the same step, close the panel
         if (activeStepEl === stepEl && panel.classList.contains('open')) {
@@ -4138,17 +4212,22 @@
         }
 
         activeStepEl = stepEl;
-        if (stepEl) stepEl.classList.add('module-active');
+        if (stepEl) {
+            stepEl.classList.add('module-active');
+            const btn = stepEl.querySelector('.open-tool-btn');
+            if (btn) btn.textContent = '✕ Close Tool';
+        }
         closeAskPanel();
 
         titleEl.textContent = title || 'Tool';
         frame.src = url;
         panel.classList.add('open');
+        panel.classList.add('embedded');
 
-        // No need to shrink main col — panel is fixed overlay
-
-        // Scroll the step into view
+        // Move the shared panel node into this step's own card so the tool
+        // renders where it belongs instead of floating elsewhere on the page.
         if (stepEl) {
+            stepEl.appendChild(panel);
             setTimeout(() => {
                 stepEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 100);
@@ -4159,9 +4238,14 @@
         const panel = document.getElementById('toolPanel');
         const frame = document.getElementById('toolPanelFrame');
         panel.classList.remove('open');
+        panel.classList.remove('embedded');
         frame.src = '';
+        const home = document.getElementById('toolPanelHome');
+        if (home && panel.parentElement !== home) home.appendChild(panel);
         if (activeStepEl) {
             activeStepEl.classList.remove('module-active');
+            const btn = activeStepEl.querySelector('.open-tool-btn');
+            if (btn) btn.textContent = '⊕ Open Tool';
             activeStepEl = null;
         }
     }
@@ -4441,7 +4525,7 @@
         }
     }
 
-    function recordLikedStep({ tool, instruction, instrument, genre, primaryFocus, secondaryFocus }) {
+    function recordLikedStep({ tool, instruction, instrument, genre, primaryFocus }) {
         if (!tool && !instruction) return;
         try {
             const entry = {
@@ -4450,7 +4534,6 @@
                 instrument: instrument || '',
                 genre: genre || '',
                 primaryFocus: primaryFocus || '',
-                secondaryFocus: secondaryFocus || '',
                 date: new Date().toISOString()
             };
             let liked = [];
@@ -4469,8 +4552,7 @@
                 instruction: step.instruction,
                 instrument: currentInstrument,
                 genre: document.getElementById('genreSelect') ? document.getElementById('genreSelect').value : '',
-                primaryFocus: currentPrimaryFocus,
-                secondaryFocus: currentSecondaryFocus
+                primaryFocus: currentPrimaryFocus
             });
             // timerStepElapsed already reflects total real time on this step — it keeps
             // incrementing every second regardless of the countdown, including any time
