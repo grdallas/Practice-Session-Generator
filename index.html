@@ -130,7 +130,7 @@
 
         .tagline {
             font-size: clamp(0.8rem, 2vw, 0.95rem);
-            color: var(--ink-muted);
+            color: var(--ink-light);
             font-style: italic;
             letter-spacing: 0.04em;
         }
@@ -139,7 +139,7 @@
             font-family: 'Cormorant Garamond', serif;
             font-size: 0.8rem;
             font-style: italic;
-            color: var(--border);
+            color: var(--ink-light);
             letter-spacing: 0.02em;
             margin-top: 0.9rem;
         }
@@ -200,7 +200,7 @@
             font-size: 0.7rem;
             letter-spacing: 0.22em;
             text-transform: uppercase;
-            color: var(--ink-muted);
+            color: var(--ink-light);
             margin-bottom: 1.75rem;
             font-style: italic;
         }
@@ -1252,48 +1252,6 @@
             margin-top: 0.35rem;
             font-family: 'Cormorant Garamond', serif;
         }
-        .advanced-toggle {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-family: 'Libre Baskerville', serif;
-            font-size: 0.72rem;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: var(--ink-muted);
-            padding: 0.75rem 0 0;
-            width: 100%;
-            text-align: left;
-            transition: color 0.15s;
-        }
-        .advanced-toggle:hover { color: var(--ink); }
-        .advanced-toggle .toggle-arrow {
-            display: inline-block;
-            transition: transform 0.25s;
-            font-style: normal;
-        }
-        .advanced-toggle.open .toggle-arrow { transform: rotate(90deg); }
-        .advanced-options {
-            display: none;
-            flex-direction: column;
-            gap: 0;
-        }
-        .advanced-options.open { display: flex; }
-        .advanced-options .form-row { margin-top: 1.25rem; margin-bottom: 0; }
-        body.deep-practice-mode .advanced-toggle {
-            color: var(--amber);
-            font-weight: 700;
-        }
-        body.deep-practice-mode .advanced-toggle:hover { color: var(--ink); }
-        body.deep-practice-mode .advanced-options.open {
-            border-left: 2px solid var(--amber);
-            padding-left: 1rem;
-            margin-left: -1rem;
-        }
-
         /* ── Tools ── */
         /* Practice Tools page — card grid, built to scale as more tools are added */
         .tools-grid {
@@ -1347,11 +1305,12 @@
             position: fixed;
             top: 7rem;
             right: 1.5rem;
-            display: flex;
+            display: none; /* shown only on the Practice Tools page — toggled via .show in showView() */
             flex-direction: column;
             gap: 0.5rem;
             z-index: 90;
         }
+        .quick-tools.show { display: flex; }
         .tool-quick-btn {
             background: var(--paper);
             border: 1.5px solid var(--amber);
@@ -1374,7 +1333,9 @@
             outline-offset: 3px;
         }
         @media (max-width: 900px) {
-            .quick-tools { display: none; } /* Practice Tools page covers mobile access */
+            /* !important: must win over .quick-tools.show — Practice Tools
+               page covers mobile access instead. */
+            .quick-tools { display: none !important; }
         }
 
         /* ── Idea Vault ── */
@@ -1891,7 +1852,10 @@
                 <optgroup label="Wind">
                     <option value="trumpet">Trumpet</option>
                     <option value="trombone">Trombone</option>
-                    <option value="saxophone">Saxophone</option>
+                    <option value="alto saxophone">Alto Saxophone</option>
+                    <option value="tenor saxophone">Tenor Saxophone</option>
+                    <option value="soprano saxophone">Soprano Saxophone</option>
+                    <option value="baritone saxophone">Baritone Saxophone</option>
                     <option value="clarinet">Clarinet</option>
                     <option value="flute">Flute</option>
                     <option value="tuba">Tuba</option>
@@ -1909,15 +1873,10 @@
             <input type="text" id="instrumentOther" placeholder="Enter your instrument..." maxlength="100" style="display:none; margin-top:0.5rem;">
         </div>
 
-        <button class="advanced-toggle" id="advancedToggle" type="button">
-            <span class="toggle-arrow">›</span> Advanced Options
-        </button>
-
-        <div class="advanced-options" id="advancedOptions">
-            <div class="form-row">
+        <div class="form-row">
                 <label for="genreSelect">Genre</label>
                 <select id="genreSelect">
-                    <option value="Jazz">Jazz</option>
+                    <option value="Jazz" selected>Jazz</option>
                     <option value="Classical">Classical</option>
                     <option value="Blues">Blues</option>
                     <option value="Rock">Rock</option>
@@ -1941,7 +1900,7 @@
                 <div class="form-row">
                     <label for="primarySelect">Primary Focus</label>
                     <select id="primarySelect">
-                        <option value="Fundamentals">Fundamentals</option>
+                        <option value="Fundamentals" selected>Fundamentals</option>
                         <option value="Improvisation">Improvisation</option>
                         <option value="Chords & Harmony">Chords &amp; Harmony</option>
                         <option value="Rhythm & Time Feel">Rhythm &amp; Time Feel</option>
@@ -1954,7 +1913,7 @@
                 <div class="form-row" id="secondaryFocusRow">
                     <label for="secondarySelect">Secondary Focus <span style="font-style:italic; text-transform:none; font-weight:normal;">(optional)</span></label>
                     <select id="secondarySelect">
-                        <option value="">None</option>
+                        <option value="" selected>None</option>
                         <option value="Fundamentals">Fundamentals</option>
                         <option value="Improvisation">Improvisation</option>
                         <option value="Chords & Harmony">Chords &amp; Harmony</option>
@@ -1982,9 +1941,6 @@
                 <label for="focus">What are you working on? <span style="font-style:italic; text-transform:none;">(optional, but for best results)</span></label>
                 <textarea id="focus" placeholder="e.g. I'm trying to get more comfortable improvising over ii-V-Is in flat keys, my time feel falls apart at faster tempos..." maxlength="500"></textarea>
             </div>
-
-
-        </div>
     </div>
 
     <button class="generate-btn" id="generateBtn" onclick="generateSession()">
@@ -2127,7 +2083,10 @@
                         <optgroup label="Wind">
                             <option value="trumpet">Trumpet</option>
                             <option value="trombone">Trombone</option>
-                            <option value="saxophone">Saxophone</option>
+                            <option value="alto saxophone">Alto Saxophone</option>
+                            <option value="tenor saxophone">Tenor Saxophone</option>
+                            <option value="soprano saxophone">Soprano Saxophone</option>
+                            <option value="baritone saxophone">Baritone Saxophone</option>
                             <option value="clarinet">Clarinet</option>
                             <option value="flute">Flute</option>
                             <option value="tuba">Tuba</option>
@@ -2307,7 +2266,10 @@
                         <optgroup label="Wind">
                             <option value="trumpet">Trumpet</option>
                             <option value="trombone">Trombone</option>
-                            <option value="saxophone">Saxophone</option>
+                            <option value="alto saxophone">Alto Saxophone</option>
+                            <option value="tenor saxophone">Tenor Saxophone</option>
+                            <option value="soprano saxophone">Soprano Saxophone</option>
+                            <option value="baritone saxophone">Baritone Saxophone</option>
                             <option value="clarinet">Clarinet</option>
                             <option value="flute">Flute</option>
                             <option value="tuba">Tuba</option>
@@ -3428,6 +3390,7 @@
         const toolFull = document.getElementById('view-tool-full');
         const ideas = document.getElementById('view-ideas');
         const log = document.getElementById('view-log');
+        const quickTools = document.querySelector('.quick-tools');
         main.style.display = 'none';
         profile.style.display = 'none';
         settings.style.display = 'none';
@@ -3436,6 +3399,12 @@
         toolFull.style.display = 'none';
         ideas.style.display = 'none';
         log.style.display = 'none';
+        // The quick-access tool sidebar only makes sense alongside the
+        // Practice Tools page itself — showing it everywhere was extra
+        // visual noise on pages already asking for the user's full focus.
+        // A class, not an inline style — the mobile media query needs to
+        // still be able to hide it even when this class is applied.
+        quickTools.classList.remove('show');
         // Leaving the full-screen tool page — stop its iframe (audio, timers)
         // rather than let it keep running unseen in the background.
         if (currentView === 'toolFull' && view !== 'toolFull') {
@@ -3455,6 +3424,7 @@
             loadWeeklyGoalsUI();
         } else if (view === 'tools') {
             tools.style.display = 'flex';
+            quickTools.classList.add('show');
         } else if (view === 'toolFull') {
             toolFull.style.display = 'flex';
         } else if (view === 'ideas') {
@@ -3685,18 +3655,6 @@
         // Primary/Secondary Focus stay visible in Deep Practice mode now —
         // "General" already covers "let the AI spread across categories" for
         // any session, so Deep Practice no longer needs to force that itself.
-
-        // Entering Deep Practice: surface the specific parameters rather than
-        // leaving them tucked away — worth a look before a longer session.
-        // Leaving the mode doesn't force it back shut, in case you opened it yourself.
-        if (deepPracticeMode) {
-            const advToggle = document.getElementById('advancedToggle');
-            const advOptions = document.getElementById('advancedOptions');
-            if (advToggle && advOptions && !advToggle.classList.contains('open')) {
-                advToggle.classList.add('open');
-                advOptions.classList.add('open');
-            }
-        }
     }
 
     function toggleDeepPracticeMode() {
@@ -4659,12 +4617,6 @@
             document.querySelectorAll('.tool-step').forEach(el => el.classList.remove('timer-done'));
         }, 3000);
     }
-
-    // ── Advanced options toggle
-    document.getElementById('advancedToggle').addEventListener('click', function() {
-        this.classList.toggle('open');
-        document.getElementById('advancedOptions').classList.toggle('open');
-    });
 
     // Instrument select — show/hide Other input
     document.getElementById('instrumentSelect').addEventListener('change', function() {
