@@ -1882,6 +1882,11 @@
         <span style="font-family:'Libre Baskerville',serif; font-size:0.85rem; color:var(--ink-light);">Deep Practice Mode</span>
     </div>
 
+    <!-- Once a session is generated, the parameters form hides (see renderSession/
+         startNewSession) so the session itself is the focus instead of a long page
+         with a full form sitting above it — this button is the only way back in. -->
+    <button class="generate-btn" id="newSessionBtn" onclick="startNewSession()" style="display:none; margin-bottom:1.75rem;">+ New Session</button>
+
     <div class="form-section">
         <div class="form-section-label">Session Parameters</div>
         <div class="form-row">
@@ -2900,7 +2905,25 @@
 
         const output = document.getElementById('sessionOutput');
         output.classList.add('active');
-        output.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+        // The parameters form did its job — hide it so the session itself
+        // doesn't sit below a full page of controls. startNewSession() below
+        // is the only way back to it.
+        document.querySelector('.form-section').style.display = 'none';
+        document.getElementById('generateBtn').style.display = 'none';
+        document.getElementById('newSessionBtn').style.display = '';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function startNewSession() {
+        timerStop();
+        document.getElementById('sessionOutput').classList.remove('active');
+        document.querySelector('.form-section').style.display = '';
+        document.getElementById('generateBtn').style.display = '';
+        document.getElementById('newSessionBtn').style.display = 'none';
+        document.getElementById('errorMsg').textContent = '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     function renderStep(step, i, container) {
