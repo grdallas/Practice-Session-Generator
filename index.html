@@ -726,6 +726,36 @@
             box-shadow: -6px 0 24px rgba(0,0,0,0.3);
         }
         .timer-panel.active { display: flex; }
+
+        /* ── Docked timer bar ───────────────────────────────────────────────
+           Applied by timerLoadStep() whenever there isn't enough gutter for
+           the square panel — phones, but also narrow desktop windows. Driven
+           by a class rather than a media query because the deciding factor is
+           measured gutter space, not viewport width. */
+        .timer-panel.active.docked {
+            position: fixed;
+            top: auto;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: auto;
+            height: auto;
+            max-height: 45vh;
+            overflow-y: auto;
+            border: none;
+            border-top: 2px solid var(--amber);
+            outline: none;
+            box-shadow: 0 -6px 24px rgba(0,0,0,0.35);
+            padding: 0.75rem 1rem calc(0.75rem + env(safe-area-inset-bottom));
+            gap: 0.4rem;
+        }
+        .timer-panel.active.docked .timer-log { display: none; }
+        .timer-panel.active.docked .timer-panel-countdown { font-size: 1.9rem; }
+        .timer-panel.active.docked .timer-panel-controls { flex-wrap: wrap; gap: 0.35rem; }
+        .timer-panel.active.docked .timer-panel-btn { flex: 1 1 auto; min-width: 44px; min-height: 38px; }
+        /* Keep the docked bar from covering the last step's controls. */
+        body.timer-docked .session-output { padding-bottom: 45vh; }
+
         .timer-log {
             flex: 1;
             overflow-y: auto;
@@ -1835,6 +1865,28 @@
         .tool-panel.embedded iframe {
             min-height: 480px;
         }
+
+        /* On a phone, embedding the tool inline squeezed it to ~267px wide
+           inside the card's padding and added ~600px of scroll. On narrow
+           screens it goes back to being a bottom sheet, sitting above the
+           docked timer bar (--timer-bar-h) so the two never overlap. */
+        @media (max-width: 900px) {
+            .tool-panel.open.embedded {
+                position: fixed;
+                left: 0;
+                right: 0;
+                bottom: var(--timer-bar-h, 0px);
+                top: auto;
+                width: auto;
+                max-height: calc(70vh - var(--timer-bar-h, 0px));
+                margin-top: 0;
+                border: none;
+                border-top: 2px solid var(--ink);
+                box-shadow: 0 -4px 32px rgba(0,0,0,0.25);
+                z-index: 90;
+            }
+            .tool-panel.open.embedded iframe { min-height: 0; flex: 1; }
+        }
         .step-footer .open-tool-btn {
             margin-right: auto;
         }
@@ -1850,7 +1902,6 @@
         <button class="tool-quick-btn" onclick="openSidebarTool('chord-drone', 'https://grdallas.github.io/chord-drone/', this)" title="Open Chord Drone">Chord Drone</button>
         <button class="tool-quick-btn" onclick="openSidebarTool('chord-looper', 'https://grdallas.github.io/chord-looper-embedded/', this)" title="Open Chord Looper">Chord Looper</button>
         <button class="tool-quick-btn" onclick="openSidebarTool('metronome', 'https://grdallas.github.io/metronome-embedded/', this)" title="Open Metronome">Metronome</button>
-        <button class="tool-quick-btn" onclick="openSidebarTool('polyrhythm', 'https://grdallas.github.io/polyrhythm-trainer-embedded/', this)" title="Open Polyrhythm Trainer">Polyrhythm</button>
         <button class="tool-quick-btn" onclick="openSidebarTool('scale-explorer', 'https://grdallas.github.io/guitar-scale-visualizer/', this)" title="Open Scale Explorer">Scale Explorer</button>
     </div>
 
@@ -2234,15 +2285,6 @@
             </div>
         </div>
 
-        <!-- Advanced Tools -->
-        <div class="form-section">
-            <div class="form-section-label">Advanced Tools</div>
-            <div style="display:flex; align-items:center; gap:0.75rem; padding:0.5rem 0;">
-                <input type="checkbox" id="includePolyrhythmToggle" style="accent-color:var(--amber); cursor:pointer; width:16px; height:16px;">
-                <label for="includePolyrhythmToggle" style="font-size:0.85rem; color:var(--ink-light); cursor:pointer; line-height:1.5;">Allow the Polyrhythm Trainer in generated sessions<br><span style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:0.78rem;color:var(--ink-muted);">Only ever suggested for Advanced or Expert difficulty sessions — this just opts you in when it fits, it won't show up otherwise.</span></label>
-            </div>
-        </div>
-
         <!-- About the AI -->
         <div class="form-section">
             <div class="form-section-label">About the AI</div>
@@ -2496,11 +2538,6 @@
                 <div class="tool-card-desc">A straightforward click track for building time feel at any tempo.</div>
                 <div class="tool-card-action">Open →</div>
             </div>
-            <div class="tool-card" id="toolcard-polyrhythm" onclick="openToolFullPage('polyrhythm', 'https://grdallas.github.io/polyrhythm-trainer-embedded/')">
-                <div class="tool-card-name">Polyrhythm Trainer</div>
-                <div class="tool-card-desc">Hear and internalize rhythmic superimpositions like 3-against-4 or 5-against-4, with a visual and audio guide for each voice.</div>
-                <div class="tool-card-action">Open →</div>
-            </div>
             <div class="tool-card" id="toolcard-scale-explorer" onclick="openToolFullPage('scale-explorer', 'https://grdallas.github.io/guitar-scale-visualizer/')">
                 <div class="tool-card-name">Scale Explorer</div>
                 <div class="tool-card-desc">See any scale or mode laid out across the whole fretboard — pick from the list or just type a root and scale name.</div>
@@ -2698,7 +2735,10 @@
                 likedSteps = JSON.parse(localStorage.getItem('practiceLabLikedSteps') || '[]').slice(0, 15);
             }
             includeMindset = settings.includeMindset === true;
-            includePolyrhythm = settings.includePolyrhythm === true;
+            // Polyrhythm Trainer isn't deployed — its URL 404s, so never let a
+            // generated step link to it. A previously-saved setting of true would
+            // otherwise still reach the worker. Restore this line when the tool ships.
+            includePolyrhythm = false;
             pacing = settings.pacing || 3;
         } catch (e) {}
         let customInstructions = '';
@@ -4390,6 +4430,28 @@
     let timerInterval = null;
     let timerSecondsLeft = 0;
     let timerTotalSeconds = 0;
+    // Gutter mode needs real room beside the session card. Below this much
+    // usable gutter the panel docks to the bottom instead. Decided from
+    // measured space, not viewport width — a 1440px screen only has a 320px
+    // gutter, so a width-based breakpoint left a broken middle zone.
+    const TIMER_GUTTER_MIN_SIZE = 240;
+    const TIMER_GUTTER_MAX_SIZE = 420;
+
+
+    // Publishes the mobile timer bar's real height as --timer-bar-h so the
+    // tool panel's bottom sheet can stack above it rather than overlap.
+    // Above the breakpoint the timer sits in the gutter, so it's 0.
+    function syncTimerBarHeight() {
+        const panel = document.getElementById('timerPanel');
+        const active = panel && panel.classList.contains('active');
+        const h = (active && panel.classList.contains('docked')) ? panel.offsetHeight : 0;
+        document.documentElement.style.setProperty('--timer-bar-h', h + 'px');
+    }
+    window.addEventListener('resize', () => {
+        syncTimerBarHeight();
+        if (document.body.classList.contains('timer-running')) timerLoadStep(timerCurrentStep);
+    });
+
     let timerCurrentStep = 0;
     let timerPaused = false;
     let timerSessionElapsed = 0;  // total session seconds
@@ -4424,6 +4486,8 @@
         const tLog = document.getElementById('timerLog');
         if (tLog) tLog.innerHTML = '';
         document.getElementById('timerPanel').classList.add('active');
+        document.body.classList.add('timer-running');
+        syncTimerBarHeight();
         document.getElementById('sessionStartRow').style.display = 'none';
         // Start overall elapsed counter
         if (timerElapsedInterval) clearInterval(timerElapsedInterval);
@@ -4472,17 +4536,45 @@
 
             // Position timer panel so it pops out slightly past the active
             // step's left edge (into the page gutter) while its right edge
+            // stays beside the card. Only valid where a gutter actually
+            // exists — on a phone there is none, and this math put the panel
+            // fully off-screen (left: -424px on a 375px viewport). Below the
+            // breakpoint we clear these inline styles entirely and let the
+            // mobile CSS pin it as a bottom bar instead; inline styles would
+            // otherwise beat the media query.
             const panel = document.getElementById('timerPanel');
             const sessionOutput = document.getElementById('sessionOutput');
             const sessionRect = sessionOutput.getBoundingClientRect();
-            const stepRect = stepEls[index].getBoundingClientRect();
-            const stepRelTop = stepRect.top - sessionRect.top + sessionOutput.scrollTop;
-            const stepHeight = stepEls[index].offsetHeight;
-            const gap = 16; // space between panel and card
-            panel.style.top = stepRelTop + 'px';
-            panel.style.height = stepHeight + 'px';
-            panel.style.width = stepHeight + 'px';
-            panel.style.left = (-stepHeight - gap - 10) + 'px'; // extra 10 for outline
+            const gap = 16;                       // space between panel and card
+            const outlineAllowance = 10;
+            const availableGutter = sessionRect.left - gap - outlineAllowance;
+
+            if (availableGutter >= TIMER_GUTTER_MIN_SIZE) {
+                // Gutter mode: a square panel beside the active step. Size is
+                // clamped to what the gutter can actually hold — matching the
+                // step's height unclamped meant a tall card (one with a tool
+                // embedded in it) produced a 711px square that hung ~417px off
+                // the left edge of a 1440px screen.
+                const stepRect = stepEls[index].getBoundingClientRect();
+                const stepRelTop = stepRect.top - sessionRect.top + sessionOutput.scrollTop;
+                const size = Math.min(stepEls[index].offsetHeight, availableGutter, TIMER_GUTTER_MAX_SIZE);
+                panel.classList.remove('docked');
+                document.body.classList.remove('timer-docked');
+                panel.style.top = stepRelTop + 'px';
+                panel.style.height = size + 'px';
+                panel.style.width = size + 'px';
+                panel.style.left = (-size - gap - outlineAllowance) + 'px';
+            } else {
+                // Not enough gutter (phones, narrow windows) — dock it as a
+                // bottom bar. Inline styles must be cleared or they'd beat the
+                // docked CSS.
+                panel.classList.add('docked');
+                document.body.classList.add('timer-docked');
+                panel.style.top = '';
+                panel.style.height = '';
+                panel.style.width = '';
+                panel.style.left = '';
+            }
         }
 
         const step = currentSession.steps[index];
@@ -4669,6 +4761,10 @@
         timerInterval = null;
         timerElapsedInterval = null;
         document.getElementById('timerPanel').classList.remove('active');
+        document.body.classList.remove('timer-running');
+        document.body.classList.remove('timer-docked');
+        document.getElementById('timerPanel').classList.remove('docked');
+        document.documentElement.style.setProperty('--timer-bar-h', '0px');
         document.getElementById('sessionStartRow').style.display = '';
         document.querySelectorAll('.tool-step').forEach(el => {
             el.classList.remove('timer-active', 'timer-done');
@@ -4690,6 +4786,10 @@
         }
 
         document.getElementById('timerPanel').classList.remove('active');
+        document.body.classList.remove('timer-running');
+        document.body.classList.remove('timer-docked');
+        document.getElementById('timerPanel').classList.remove('docked');
+        document.documentElement.style.setProperty('--timer-bar-h', '0px');
         document.getElementById('sessionStartRow').style.display = '';
         document.getElementById('timerStepName').textContent = '—';
         document.getElementById('timerCountdown').textContent = '—';
