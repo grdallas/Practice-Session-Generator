@@ -1674,15 +1674,17 @@
             max-width: 1200px;
         }
         .tool-frame-wrap {
-            border: 2px solid var(--ink);
-            background: var(--paper);
-            overflow: hidden;
+            /* No border/background here on purpose — the embedded tool should
+               read as a continuation of this page, not a boxed panel on it.
+               The iframe below reports its own content height (see the
+               'practiceLabToolHeight' message listener) so this wrapper just
+               grows to fit; the fixed height is only a fallback before that
+               arrives. */
         }
         #toolFullFrame {
             display: block;
             width: 100%;
-            height: calc(100vh - 220px);
-            min-height: 600px;
+            height: 640px;
             border: none;
         }
 
@@ -3747,9 +3749,27 @@
     function openToolFullPage(toolId, url) {
         const names = { 'chord-drone': 'Chord Drone', 'changes': 'Changes', 'metronome': 'Metronome', 'polyrhythm': 'Polyrhythm Trainer', 'scale-explorer': 'Scale Explorer' };
         document.getElementById('toolFullTitle').textContent = names[toolId] || toolId;
+        document.getElementById('toolFullFrame').style.height = '640px'; // reset to the fallback until the new tool reports its real height
         document.getElementById('toolFullFrame').src = url;
         showView('toolFull');
     }
+
+    // Lets an embedded tool (currently just Chord Drone) tell us its actual
+    // content height, so the iframe can grow to fit instead of being a fixed-
+    // height box that scrolls internally — the whole point is that it reads as
+    // this page, not a panel on it. Generic by message type, not by sender, so
+    // any tool that starts sending this later picks up the same behavior for
+    // free without another change here.
+    window.addEventListener('message', (e) => {
+        if (!e.data || e.data.type !== 'practiceLabToolHeight') return;
+        const h = Number(e.data.height);
+        if (!Number.isFinite(h) || h <= 0) return;
+        const frame = document.getElementById('toolFullFrame');
+        const toolFull = document.getElementById('view-tool-full');
+        if (frame && toolFull && toolFull.style.display !== 'none') {
+            frame.style.height = Math.max(h, 400) + 'px';
+        }
+    });
 
     // ── View switching ─────────────────────────────────────────────────────
     function showView(view) {
