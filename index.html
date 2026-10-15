@@ -133,6 +133,26 @@
         .nav-bar a:hover { color: var(--paper); border-bottom-color: var(--amber); }
         .nav-sep { color: rgba(241,234,217,0.25); font-size: 0.7rem; }
 
+        /* Phones: one link per row instead of a wrapping line of dots. */
+        @media (max-width: 640px) {
+            .nav-bar {
+                flex-direction: column;
+                align-items: stretch;
+                row-gap: 0;
+                column-gap: 0;
+            }
+            .nav-sep { display: none; }
+            .nav-bar a {
+                display: block;
+                padding: 0.7rem 0;
+                font-size: 0.78rem;
+                text-align: center;
+                border-bottom: 1px solid rgba(241,234,217,0.12);
+            }
+            .nav-bar a:last-child { border-bottom: none; }
+            .nav-bar a:hover { border-bottom-color: rgba(241,234,217,0.12); color: var(--amber); }
+        }
+
         .title {
             font-family: var(--font-display);
             font-size: clamp(1.9rem, 6vw, 2.9rem);
@@ -1999,7 +2019,8 @@
     <div class="header">
         <h1 class="title">The Practice Lab</h1>
         <p class="tagline">an intelligent practice companion for musicians</p>
-        <p class="daily-quote" id="dailyQuote"></p>
+        <!-- Daily quote removed from the header for now. DAILY_QUOTES and renderDailyQuote()
+             below are still in the script; give any element id="dailyQuote" to bring it back. -->
         <div class="divider"></div>
         <div class="nav-bar">
             <a href="#" onclick="showView('profile'); return false;">My Profile</a>
