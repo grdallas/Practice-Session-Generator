@@ -2001,6 +2001,14 @@
         .step-footer .open-tool-btn {
             margin-right: auto;
         }
+        .tool-panel.open.embedded.fit iframe {
+            flex: none;
+            min-height: 0;
+            transition: height 0.15s ease;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .tool-panel.open.embedded.fit iframe { transition: none; }
+        }
     </style>
 </head>
 <body>
@@ -3805,6 +3813,16 @@
         if (!e.data || e.data.type !== 'practiceLabToolHeight') return;
         const h = Number(e.data.height);
         if (!Number.isFinite(h) || h <= 0) return;
+        const panelFrame = document.getElementById('toolPanelFrame');
+        const panel = document.getElementById('toolPanel');
+        if (panelFrame && e.source === panelFrame.contentWindow) {
+            if (!panel.classList.contains('fit')) return;
+            // Grow to fit the tool, up to most of the screen; past that the tool scrolls inside.
+            const sheet = window.innerWidth <= 900;
+            const cap = sheet ? window.innerHeight * 0.7 - 60 : window.innerHeight * 0.85;
+            panelFrame.style.height = Math.round(Math.min(h, cap)) + 'px';
+            return;
+        }
         const frame = document.getElementById('toolFullFrame');
         const toolFull = document.getElementById('view-tool-full');
         if (frame && toolFull && toolFull.style.display !== 'none') {
@@ -4597,7 +4615,18 @@
         closeAskPanel();
 
         titleEl.textContent = title || 'Tool';
-        frame.src = url;
+        // Chord Drone opens as a small player (chord + transport) that the user
+        // can expand in place; it reports its own height so the panel fits it.
+        let src = url;
+        const fits = url.startsWith('https://grdallas.github.io/chord-drone/');
+        if (fits) {
+            const u = new URL(url);
+            u.searchParams.set('view', 'mini');
+            src = u.toString();
+        }
+        panel.classList.toggle('fit', fits);
+        frame.style.height = fits ? '240px' : '';
+        frame.src = src;
         panel.classList.add('open');
         panel.classList.add('embedded');
 
@@ -4616,6 +4645,8 @@
         const frame = document.getElementById('toolPanelFrame');
         panel.classList.remove('open');
         panel.classList.remove('embedded');
+        panel.classList.remove('fit');
+        frame.style.height = '';
         frame.src = '';
         const home = document.getElementById('toolPanelHome');
         if (home && panel.parentElement !== home) home.appendChild(panel);
