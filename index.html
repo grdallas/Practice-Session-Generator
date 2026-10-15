@@ -1409,6 +1409,14 @@
         }
         /* ── Tools ── */
         /* Practice Tools page — card grid, built to scale as more tools are added */
+        .chords-subhead {
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--amber);
+            margin: 2.5rem 0 1rem;
+        }
         .tools-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -1703,7 +1711,8 @@
         }
 
         /* Practice Tools page — wide enough for a real grid of cards */
-        #view-tools .main-col {
+        #view-tools .main-col,
+        #view-chords .main-col {
             max-width: 1100px;
         }
 
@@ -1719,7 +1728,7 @@
                grows to fit; the fixed height is only a fallback before that
                arrives. */
         }
-        #toolFullFrame {
+        #toolFullFrame, #chordExplorerFrame {
             display: block;
             width: 100%;
             height: 640px;
@@ -2030,6 +2039,8 @@
             <a href="#" onclick="showView('settings'); return false;">Settings</a>
             <span class="nav-sep">&middot;</span>
             <a href="#" onclick="showView('tools'); return false;">Practice Tools</a>
+            <span class="nav-sep">&middot;</span>
+            <a href="#" onclick="showView('chords'); return false;">Chords</a>
             <span class="nav-sep">&middot;</span>
             <a href="#" onclick="showView('plan'); return false;">Practice Plan</a>
             <span class="nav-sep">&middot;</span>
@@ -2664,6 +2675,50 @@
     </div>
 </div>
 
+<!-- ── Chords View — Chord Explorer inline, plus the other chord tools. Tools
+     opened from here use the same full-screen tool page as Practice Tools,
+     with its back link pointed back here. ── -->
+<div id="view-chords" style="display:none;" class="page-wrap">
+    <div class="main-col">
+
+        <div class="tool-header" style="margin-bottom:1.5rem;">
+            <a href="#" onclick="showView('main'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Generator</a>
+            <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);">Chords</h1>
+            <p class="tagline">every shape, every inversion, and somewhere to put them to work</p>
+            <div class="divider"></div>
+        </div>
+
+        <div class="tool-frame-wrap">
+            <iframe id="chordExplorerFrame" src="" title="Chord Explorer"></iframe>
+        </div>
+
+        <div class="chords-subhead">Put them to work</div>
+        <div class="tools-grid">
+            <div class="tool-card" onclick="openToolFullPage('chord-drone', 'https://grdallas.github.io/chord-drone/')">
+                <div class="tool-card-name">Chord Drone</div>
+                <div class="tool-card-desc">Hold one chord and find every way through it.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" onclick="openToolFullPage('changes', 'https://grdallas.github.io/changes/')">
+                <div class="tool-card-name">Changes</div>
+                <div class="tool-card-desc">Loop a progression and comp through it with smooth voice leading.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" onclick="openToolFullPage('ii-v-i', 'https://grdallas.github.io/ii-v-i-trainer/')">
+                <div class="tool-card-name">ii-V-I Trainer</div>
+                <div class="tool-card-desc">The most common move in jazz, in every key.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+            <div class="tool-card" onclick="openToolFullPage('arpeggio-explorer', 'https://grdallas.github.io/arpeggio-explorer/')">
+                <div class="tool-card-name">Arpeggio Explorer</div>
+                <div class="tool-card-desc">Play the chord one note at a time, all over the neck.</div>
+                <div class="tool-card-action">Open →</div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
 <!-- ── Full-Screen Tool View — opened only from the Practice Tools grid above;
      the quick-access bar on the main page still opens the small floating
      panel (openSidebarTool), a deliberately lighter-weight glance-at-a-tool
@@ -2672,7 +2727,7 @@
     <div class="main-col">
 
         <div class="tool-header" style="margin-bottom:1.5rem;">
-            <a href="#" onclick="showView('tools'); return false;" class="back-link" style="display:inline-block; margin-bottom:1rem;">← Back to Practice Tools</a>
+            <a href="#" onclick="showView(toolFullReturnView); return false;" class="back-link" id="toolFullBack" style="display:inline-block; margin-bottom:1rem;">← Back to Practice Tools</a>
             <h1 class="tool-title" style="font-size:clamp(1.6rem,5vw,2.5rem);" id="toolFullTitle">Tool</h1>
             <div class="divider"></div>
         </div>
@@ -3784,11 +3839,16 @@
         if (window.innerWidth > 900) mainCol.style.maxWidth = '620px';
     }
 
+    const CHORD_EXPLORER_URL = 'https://grdallas.github.io/chord-explorer/';
+    let toolFullReturnView = 'tools';
+
     // Opens a tool as its own full-screen page (Practice Tools grid only —
     // the quick-access bar on the main page still uses the lighter-weight
     // floating panel via openSidebarTool above).
     function openToolFullPage(toolId, url) {
-        const names = { 'chord-drone': 'Chord Drone', 'changes': 'Changes', 'metronome': 'Metronome', 'polyrhythm': 'Polyrhythm Trainer', 'scale-explorer': 'Scale Explorer' };
+        const names = { 'chord-drone': 'Chord Drone', 'changes': 'Changes', 'metronome': 'Metronome', 'polyrhythm': 'Polyrhythm Trainer', 'scale-explorer': 'Scale Explorer', 'ii-v-i': 'ii-V-I Trainer', 'arpeggio-explorer': 'Arpeggio Explorer' };
+        toolFullReturnView = currentView === 'chords' ? 'chords' : 'tools';
+        document.getElementById('toolFullBack').textContent = toolFullReturnView === 'chords' ? '← Back to Chords' : '← Back to Practice Tools';
         document.getElementById('toolFullTitle').textContent = names[toolId] || toolId;
         document.getElementById('toolFullFrame').style.height = '640px'; // reset to the fallback until the new tool reports its real height
         document.getElementById('toolFullFrame').src = url;
@@ -3805,11 +3865,10 @@
         if (!e.data || e.data.type !== 'practiceLabToolHeight') return;
         const h = Number(e.data.height);
         if (!Number.isFinite(h) || h <= 0) return;
-        const frame = document.getElementById('toolFullFrame');
-        const toolFull = document.getElementById('view-tool-full');
-        if (frame && toolFull && toolFull.style.display !== 'none') {
-            frame.style.height = Math.max(h, 400) + 'px';
-        }
+        const frame = ['toolFullFrame', 'chordExplorerFrame']
+            .map(id => document.getElementById(id))
+            .find(f => f && f.contentWindow === e.source);
+        if (frame) frame.style.height = Math.max(h, 400) + 'px';
     });
 
     // ── View switching ─────────────────────────────────────────────────────
@@ -3820,6 +3879,7 @@
         const skills = document.getElementById('view-skills');
         const tools = document.getElementById('view-tools');
         const toolFull = document.getElementById('view-tool-full');
+        const chords = document.getElementById('view-chords');
         const ideas = document.getElementById('view-ideas');
         const log = document.getElementById('view-log');
         const plan = document.getElementById('view-plan');
@@ -3830,6 +3890,7 @@
         skills.style.display = 'none';
         tools.style.display = 'none';
         toolFull.style.display = 'none';
+        chords.style.display = 'none';
         ideas.style.display = 'none';
         log.style.display = 'none';
         plan.style.display = 'none';
@@ -3867,6 +3928,11 @@
             quickTools.classList.add('show');
         } else if (view === 'toolFull') {
             toolFull.style.display = 'flex';
+        } else if (view === 'chords') {
+            chords.style.display = 'flex';
+            // Loaded on first visit, then kept so your place in it survives a round trip
+            const frame = document.getElementById('chordExplorerFrame');
+            if (!frame.getAttribute('src')) frame.src = CHORD_EXPLORER_URL;
         } else if (view === 'ideas') {
             ideas.style.display = 'flex';
             ideaRenderList();
