@@ -392,6 +392,15 @@
             color: var(--paper);
         }
         .generate-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+        #generateBtn { margin-bottom: 0.6rem; }
+        .generate-btn.secondary {
+            background: transparent;
+            color: var(--ink);
+            border: 2px solid var(--ink);
+            font-size: 1rem;
+            padding: 0.7rem 2rem;
+        }
+        .generate-btn.secondary:hover:not(:disabled) { background: var(--ink); color: var(--paper); }
 
         .session-output { display: none; position: relative; }
         .session-output.active { display: block; }
@@ -2177,6 +2186,9 @@
     <button class="generate-btn" id="generateBtn" onclick="generateSession()">
         Generate My Practice Session
     </button>
+    <button class="generate-btn secondary" id="oneThingBtn" onclick="generateSession({ single: true })" title="One practice item instead of a full session">
+        Just One Thing
+    </button>
 
     <div class="error-msg" id="errorMsg"></div>
 
@@ -2907,8 +2919,9 @@
     // that already works (timer, tool embedding, mobile docking) instead of
     // duplicating it. generateSession() below is now just a thin wrapper that
     // reads the manual form; startPlanDay() is the other caller.
-    async function runGeneration({ instrument, difficulty, genre, primaryFocus, time, focus, timeLabel }) {
+    async function runGeneration({ instrument, difficulty, genre, primaryFocus, time, focus, timeLabel, single = false }) {
         const btn = document.getElementById('generateBtn');
+        const oneThingBtn = document.getElementById('oneThingBtn');
         const loading = document.getElementById('loading');
         const output = document.getElementById('sessionOutput');
         const errorMsg = document.getElementById('errorMsg');
@@ -2917,6 +2930,7 @@
         errorMsg.classList.remove('active');
         loading.classList.add('active');
         if (btn) btn.disabled = true;
+        if (oneThingBtn) oneThingBtn.disabled = true;
 
         // Pull in Profile + Goals + Skill Inventory (respecting the "Use my profile" toggle)
         // and Coach Preferences — these were being saved but never actually sent.
@@ -2943,6 +2957,17 @@
             includePolyrhythm = false;
             pacing = settings.pacing || 3;
         } catch (e) {}
+        // "Just One Thing": the worker's step count comes out to exactly 1 at
+        // pacing 1 for any time up to 60 minutes (computeStepCount), so a
+        // single item needs no worker change. Capped at 30: given a full hour,
+        // the one item turned into a mini-session of sub-parts. Mindset and
+        // Deep Practice would each add steps, so they're off here.
+        if (single) {
+            pacing = 1;
+            includeMindset = false;
+            time = Math.min(parseInt(time), 30);
+            timeLabel = `${time} minutes`;
+        }
         let customInstructions = '';
         try { customInstructions = localStorage.getItem('customInstructions') || ''; } catch (e) {}
 
@@ -2968,7 +2993,7 @@
                     includeMindset: includeMindset,
                     includePolyrhythm: includePolyrhythm,
                     pacing: pacing,
-                    deepPractice: deepPracticeMode
+                    deepPractice: single ? false : deepPracticeMode
                 })
             });
 
@@ -2986,11 +3011,12 @@
         } finally {
             loading.classList.remove('active');
             if (btn) btn.disabled = false;
+            if (oneThingBtn) oneThingBtn.disabled = false;
         }
         return ok;
     }
 
-    async function generateSession() {
+    async function generateSession({ single = false } = {}) {
         const instrumentSelectEl = document.getElementById('instrumentSelect');
         const instrument = instrumentSelectEl.value === 'other'
             ? document.getElementById('instrumentOther').value.trim() || 'other'
@@ -3011,7 +3037,7 @@
         const focus = document.getElementById('focus').value.trim();
         const timeLabel = time >= 120 ? `${time / 60} hours` : `${time} minutes`;
 
-        await runGeneration({ instrument, difficulty, genre, primaryFocus, time, focus, timeLabel });
+        await runGeneration({ instrument, difficulty, genre, primaryFocus, time, focus, timeLabel, single });
     }
 
     // ── Practice Plan ────────────────────────────────────────────────────
@@ -3303,6 +3329,7 @@
         // is the only way back to it.
         document.querySelector('.form-section').style.display = 'none';
         document.getElementById('generateBtn').style.display = 'none';
+        document.getElementById('oneThingBtn').style.display = 'none';
         document.getElementById('newSessionBtn').style.display = '';
 
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -3313,6 +3340,7 @@
         document.getElementById('sessionOutput').classList.remove('active');
         document.querySelector('.form-section').style.display = '';
         document.getElementById('generateBtn').style.display = '';
+        document.getElementById('oneThingBtn').style.display = '';
         document.getElementById('newSessionBtn').style.display = 'none';
         document.getElementById('errorMsg').textContent = '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
